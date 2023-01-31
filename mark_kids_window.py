@@ -48,9 +48,8 @@ class MarkKidsWindow(BaseWindowClass):
     def paste_absents(self, day):
         absents = self.get_absents_from_db(self.kids, day, self.month_num, self.year)
         for i, entry in enumerate(self.kids_frame.entrys):
-            # if absents[i] != '':
-            #     print(11111)
-            #     entry.configure(state='normal')
+            if absents[i]:
+                entry.configure(state='normal')
             entry.delete(0, tkinter.END)
             entry.insert(0, absents[i])
 
@@ -78,7 +77,7 @@ class MarkKidsWindow(BaseWindowClass):
 class InfoFrame(ctk.CTkFrame):
     def __init__(self, master: MarkKidsWindow):
         super().__init__(master)
-        work_days = master.get_work_days(master.month)
+        work_days = [str(i) for i in master.get_work_days(master.month)]
         self.date = ctk.StringVar()
 
         cmb_frame = ctk.CTkFrame(self)

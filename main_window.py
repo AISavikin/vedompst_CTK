@@ -4,7 +4,7 @@ from tkinter import messagebox
 from database import Student
 from kids_window import KidsWindow
 from mark_kids_window import MarkKidsWindow
-from lab import SheetWindow
+from sheet_window import SheetWindow
 from datetime import datetime
 from database import create_database
 
@@ -37,8 +37,12 @@ class MainWindow(ctk.CTk):
 
     def add_group(self):
         group = AddGroup(self).open()
-        if group:
-            KidsWindow(self, group)
+        if not group:
+            return
+        if not group.isdigit():
+            messagebox.showerror(message="Только цифры!")
+            return
+        KidsWindow(self, group)
 
     def mark_kids(self):
         self.withdraw()
@@ -67,15 +71,15 @@ class AddGroup(ctk.CTkToplevel):
         ctk.CTkLabel(self, text='Номер группы', font=parent.font).pack(pady=5, padx=5)
         ctk.CTkEntry(self, textvariable=self.group, font=parent.font).pack(pady=5, padx=5)
         ctk.CTkButton(self, text="Ok", command=self.destroy, font=parent.font).pack(padx=10, pady=5)
+        self.bind('<Return>', self.custom_destroy)
 
     def open(self):
         self.grab_set()
         self.wait_window()
-        if not self.group.get().isdigit():
-            messagebox.showerror(message="Только цифры!")
-            return
         return self.group.get()
 
+    def custom_destroy(self, *args):
+        self.destroy()
 
 class MainFrame(ctk.CTkFrame):
 
@@ -112,7 +116,7 @@ class ComboFrame(ctk.CTkFrame):
         self.MONTH_NUMS = (9, 10, 11, 12, 1, 2, 3, 4, 5)
         self.cmb_month = ctk.CTkComboBox(self, values=[i for i in self.MONTH_NAMES], font=self.font)
         self.cmb_month.set(self.get_month_now())
-        self.cmb_group = ctk.CTkComboBox(self, values=groups, font=self.font)
+        self.cmb_group = ctk.CTkComboBox(self, values=groups if groups else ['Пусто'], font=self.font)
         self.cmb_group.pack(side=tkinter.LEFT, padx=3)
         self.cmb_month.pack(side=tkinter.LEFT)
 

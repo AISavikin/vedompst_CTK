@@ -21,6 +21,10 @@ class Student(BaseModel):
     class Meta:
         db_table = 'students'
         order_by = 'name'
+        verbose_name = 'name'
+
+    def __str__(self):
+        return self.name
 
 
 class Attendance(BaseModel):

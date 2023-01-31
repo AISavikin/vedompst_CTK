@@ -35,7 +35,7 @@ class KidsWindow(BaseWindowClass):
 
 
     def change_active(self, event):
-        name = self.control_frame.entry.get()
+        name = self.table_frame.get_name_from_table()
         if not name:
             return
         active = Student.get(Student.name == name).active

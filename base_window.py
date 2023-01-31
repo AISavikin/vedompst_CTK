@@ -11,6 +11,8 @@ class BaseWindowClass(ctk.CTkToplevel):
     MONTH_NUMS = MONTH_NUMS
     YEARS = YEARS
     WORK_DAYS = WORK_DAYS
+    PATH_SHEET = PATH_SHEET
+    PATH_SCREENSHOT = PATH_SCREENSHOT
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -25,7 +27,7 @@ class BaseWindowClass(ctk.CTkToplevel):
     def get_work_days(self, month: str):
         month_num = self.get_month_num(month)
         year = self.get_year(month_num)
-        return [str(day[0]) for day in Calendar().itermonthdays2(year, month_num) if
+        return [day[0] for day in Calendar().itermonthdays2(year, month_num) if
                 day[0] != 0 and day[1] in WORK_DAYS]
 
     @classmethod
@@ -36,6 +38,11 @@ class BaseWindowClass(ctk.CTkToplevel):
     def get_month_num(cls, month: str) -> int:
         index = cls.MONTH_NAMES.index(month)
         return cls.MONTH_NUMS[index]
+
+    @classmethod
+    def get_weekend(cls, month_num: int):
+        year = cls.get_year(month_num)
+        return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
 
     @staticmethod
     def get_month_now():
