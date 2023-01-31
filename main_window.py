@@ -55,8 +55,11 @@ class MainWindow(ctk.CTk):
         self.kids(group)
 
     def mark_kids(self):
-        self.withdraw()
         group = self.main_frame.get_group()
+        if group == 'Пусто':
+            messagebox.showerror(title='Ошибка', message='База данных пуста!')
+            return
+        self.withdraw()
         month = self.main_frame.get_month()
         window = MarkKidsWindow(self, group, month)
         window.grab_set()
@@ -64,8 +67,11 @@ class MainWindow(ctk.CTk):
         self.deiconify()
 
     def sheet(self):
-        self.withdraw()
         group = self.main_frame.get_group()
+        if group == 'Пусто':
+            messagebox.showerror(title='Ошибка', message='База данных пуста!')
+            return
+        self.withdraw()
         month = self.main_frame.get_month()
         window = SheetWindow(self, group, month)
         window.grab_set()

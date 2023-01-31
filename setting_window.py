@@ -4,11 +4,16 @@ from tkinter import messagebox, filedialog
 from base_window import BaseWindowClass
 import yaml
 
+
 class SettingsWindow(BaseWindowClass):
     def __init__(self, parent):
         super().__init__(parent)
         self.title('Настройки')
         main_frame = MainFrame(self, self.settings)
+        w = 500
+        h = 500
+        self.set_geometry(w, h)
+
         main_frame.pack()
         ctk.CTkButton(self, text='Сохранить', command=main_frame.save,
                       font=('', self.settings['font_size']), height=40).pack(pady=5, padx=5, fill=tkinter.X)
@@ -48,6 +53,7 @@ class MainFrame(ctk.CTkFrame):
 
         messagebox.showinfo(title='Настройки', message='Настройки вступят в силу после перезагрузки.')
         self.parent.destroy()
+
 
 class DataBaseFrame(ctk.CTkFrame):
     def __init__(self, parent: MainFrame):
