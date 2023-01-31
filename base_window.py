@@ -7,6 +7,7 @@ with open('settings.yaml', encoding='utf-8') as f:
     settings = yaml.safe_load(f)
 
 class BaseWindowClass(ctk.CTkToplevel):
+    settings = settings
     MONTH_NAMES = settings['MONTH_NAMES']
     MONTH_NUMS = settings['MONTH_NUMS']
     YEARS = settings['YEARS']

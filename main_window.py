@@ -3,13 +3,17 @@ import tkinter
 from tkinter import messagebox
 from database import Student
 from kids_window import KidsWindow
-# from mark_kids_window import MarkKidsWindow
-from lab import MarkKidsWindow
+from mark_kids_window import MarkKidsWindow
 from sheet_window import SheetWindow
+from setting_window import SettingsWindow
 from datetime import datetime
 from database import create_database
 from PIL import Image
+import yaml
 
+
+with open('settings.yaml', encoding='utf-8') as f:
+    font_size = yaml.safe_load(f)['font_size']
 
 
 class MainWindow(ctk.CTk):
@@ -24,7 +28,7 @@ class MainWindow(ctk.CTk):
         self.w_screen = self.winfo_screenwidth()
         self.h_screen = self.winfo_screenheight()
         self.geometry(f'+{self.w_screen // 2 - w // 2}+{self.h_screen // 2 - h // 2}')
-        self.font = ctk.CTkFont(family='Times New Roman', size=20)
+        self.font = ctk.CTkFont(family='Times New Roman', size=font_size)
 
         self.title("Ведомости")
         self.main_frame = MainFrame(self)
@@ -68,6 +72,12 @@ class MainWindow(ctk.CTk):
         window.wait_window()
         self.deiconify()
 
+    def settings(self):
+        self.withdraw()
+        window = SettingsWindow(self)
+        window.grab_set()
+        window.wait_window()
+        self.deiconify()
 
 class AddGroup(ctk.CTkToplevel):
     def __init__(self, parent):
@@ -98,7 +108,7 @@ class MainFrame(ctk.CTkFrame):
         label_frame = ctk.CTkFrame(self)
         img = ctk.CTkImage(dark_image=Image.open('settings.png'))
         ctk.CTkLabel(label_frame, text='    Ведомости детский сад', font=self.font).pack(side=tkinter.LEFT, padx=3)
-        ctk.CTkButton(label_frame, image=img, text='', width=30).pack(side=tkinter.RIGHT, padx=5)
+        ctk.CTkButton(label_frame, image=img, text='', width=30, command=master.settings).pack(side=tkinter.RIGHT, padx=5)
         label_frame.pack(pady=3, ipady=4, fill=tkinter.X)
 
         ctk.CTkButton(self, text='Добавить группу',

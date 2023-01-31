@@ -19,8 +19,8 @@ MONTH_NUMS:
 - 3
 - 4
 - 5
-PATH_SCREENSHOT: Скриншоты/
-PATH_SHEET: Ведомости/
+PATH_SCREENSHOT: E:/Desktop/ТЕСТ/Сериншоты
+PATH_SHEET: E:/Desktop/ТЕСТ/Ведомости
 WORK_DAYS:
 - 2
 - 4
