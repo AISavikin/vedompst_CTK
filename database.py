@@ -1,8 +1,9 @@
 from peewee import *
+import yaml
 
-#TODO Переменную получать из настроек
+with open('settings.yaml', encoding='utf-8') as f:
+    DB = yaml.safe_load(f)['DB']
 
-DB = "database.db"
 db = SqliteDatabase(DB, pragmas={'foreign_keys': 1})
 
 

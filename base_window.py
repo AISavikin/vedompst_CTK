@@ -1,25 +1,25 @@
 import customtkinter as ctk
 from calendar import Calendar
 from datetime import datetime
+import yaml
 
-# TODO Доставать переменные из ini
-from conf import *
-
+with open('settings.yaml', encoding='utf-8') as f:
+    settings = yaml.safe_load(f)
 
 class BaseWindowClass(ctk.CTkToplevel):
-    MONTH_NAMES = MONTH_NAMES
-    MONTH_NUMS = MONTH_NUMS
-    YEARS = YEARS
-    WORK_DAYS = WORK_DAYS
-    PATH_SHEET = PATH_SHEET
-    PATH_SCREENSHOT = PATH_SCREENSHOT
+    MONTH_NAMES = settings['MONTH_NAMES']
+    MONTH_NUMS = settings['MONTH_NUMS']
+    YEARS = settings['YEARS']
+    WORK_DAYS = settings['WORK_DAYS']
+    PATH_SHEET = settings['PATH_SHEET']
+    PATH_SCREENSHOT = settings['PATH_SCREENSHOT']
 
     def __init__(self, parent):
         super().__init__(parent)
         self.w_screen = self.winfo_screenwidth()
         self.h_screen = self.winfo_screenheight()
         self.date_now = datetime.now()
-        self.font = ctk.CTkFont(family='Times New Roman', size=20)
+        self.font = ctk.CTkFont(family='Times New Roman', size=settings['font_size'])
 
     def set_geometry(self, w, h):
         self.geometry(f'+{self.w_screen // 2 - w // 2}+{self.h_screen // 2 - h // 2}')
@@ -28,7 +28,7 @@ class BaseWindowClass(ctk.CTkToplevel):
         month_num = self.get_month_num(month)
         year = self.get_year(month_num)
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if
-                day[0] != 0 and day[1] in WORK_DAYS]
+                day[0] != 0 and day[1] in self.WORK_DAYS]
 
     @classmethod
     def get_year(cls, month_num: int) -> int:

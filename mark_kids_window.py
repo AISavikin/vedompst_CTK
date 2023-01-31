@@ -4,7 +4,8 @@ import tkinter
 from tkinter import messagebox
 from database import Student, Attendance
 from base_window import BaseWindowClass
-
+import os
+from PIL import ImageGrab
 
 class MarkKidsWindow(BaseWindowClass):
     def __init__(self, parent: ctk.CTk, group: str, month):
@@ -27,8 +28,8 @@ class MarkKidsWindow(BaseWindowClass):
         self.kids_frame.pack(pady=10, padx=15)
         ctk.CTkButton(self, text='Отметить', command=self.mark_kids, font=self.font).pack(pady=10)
 
-        day = self.info_frame.get_date()
-        self.paste_absents(day)
+        self.day = self.info_frame.get_date()
+        self.paste_absents(self.day)
 
         self.bind('<Down>', self.kids_frame.foc)
         self.bind('<Up>', self.kids_frame.foc)
@@ -73,7 +74,22 @@ class MarkKidsWindow(BaseWindowClass):
                 Attendance.create(absent=absents[indx], day=day, month=month_num, year=year, student_id=kid.id)
             else:
                 Attendance.update({Attendance.absent: absents[indx]}).where(Attendance.id == attendance[0].id).execute()
+        self.make_screenshot()
         self.destroy()
+
+    def make_screenshot(self):
+        if not os.path.exists(self.PATH_SCREENSHOT):
+            os.mkdir(self.PATH_SCREENSHOT)
+        otx, oty = map(int, self.geometry().split('+')[1:])
+        width = int(self.geometry().split('x')[0]) + 10
+        height = int(self.geometry().split('+')[0].split('x')[1]) + 30
+        scr = ImageGrab.grab(bbox=(otx, oty, otx + width, oty + height))
+        path = f'{self.PATH_SCREENSHOT}{self.group}_{self.month}_{self.day}.jpeg'
+        if os.path.exists(path):
+            if not messagebox.askyesno(title='Внимание!',
+                                       message='Скриншот с отмеченными учениками уже существует! Перезаписать?'):
+                return
+        scr.save(path)
 
 
 class InfoFrame(ctk.CTkFrame):
@@ -93,7 +109,7 @@ class InfoFrame(ctk.CTkFrame):
         cmb_frame.pack(pady=10)
 
     def get_date(self):
-        return self.date.get()
+        return self.date.get().strip()
 
 
 class KidsFrame(ctk.CTkFrame):
@@ -133,4 +149,3 @@ class KidsFrame(ctk.CTkFrame):
         if event.keycode == 39:
             now_focus.delete(0, tkinter.END)
             now_focus.insert(0, 'б')
-

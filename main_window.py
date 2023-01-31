@@ -3,11 +3,14 @@ import tkinter
 from tkinter import messagebox
 from database import Student
 from kids_window import KidsWindow
-from mark_kids_window import MarkKidsWindow
+# from mark_kids_window import MarkKidsWindow
+from lab import MarkKidsWindow
 from sheet_window import SheetWindow
 from datetime import datetime
 from database import create_database
 from PIL import Image
+
+
 
 class MainWindow(ctk.CTk):
 
@@ -26,7 +29,6 @@ class MainWindow(ctk.CTk):
         self.title("Ведомости")
         self.main_frame = MainFrame(self)
         self.main_frame.pack()
-        self.update_idletasks()
 
     def kids(self, group=None):
         self.withdraw()
@@ -95,7 +97,7 @@ class MainFrame(ctk.CTkFrame):
 
         label_frame = ctk.CTkFrame(self)
         img = ctk.CTkImage(dark_image=Image.open('settings.png'))
-        ctk.CTkLabel(label_frame, text='Ведомости детский сад', font=self.font).pack(side=tkinter.LEFT, padx=30)
+        ctk.CTkLabel(label_frame, text='    Ведомости детский сад', font=self.font).pack(side=tkinter.LEFT, padx=3)
         ctk.CTkButton(label_frame, image=img, text='', width=30).pack(side=tkinter.RIGHT, padx=5)
         label_frame.pack(pady=3, ipady=4, fill=tkinter.X)
 
@@ -103,7 +105,7 @@ class MainFrame(ctk.CTkFrame):
                       font=self.font, command=master.add_group).pack(fill=tkinter.X, padx=3, pady=3, ipady=4)
         ctk.CTkButton(self, text='Ученики', font=self.font,
                       command=master.kids).pack(fill=tkinter.X, padx=3, pady=3, ipady=4)
-        self.combo_frame.pack(pady=4)
+        self.combo_frame.pack(pady=3)
 
         ctk.CTkButton(self, text='Отметить', font=self.font,
                       command=master.mark_kids).pack(fill=tkinter.X, padx=3, pady=3, ipady=4)
@@ -115,31 +117,6 @@ class MainFrame(ctk.CTkFrame):
     def get_month(self):
         return self.combo_frame.cmb_month.get()
 
-
-class MainFrame1(ctk.CTkFrame):
-
-    def __init__(self, master: MainWindow):
-        super().__init__(master)
-        self.font = master.font
-        self.combo_frame = ComboFrame(self)
-        ctk.CTkLabel(self, text='Ведомости детский сад',
-                     font=self.font).pack(pady=3, ipady=4)
-        ctk.CTkButton(self, text='Добавить группу',
-                      font=self.font, command=master.add_group).pack(fill=tkinter.X, padx=3, pady=3, ipady=4)
-        ctk.CTkButton(self, text='Ученики', font=self.font,
-                      command=master.kids).pack(fill=tkinter.X, padx=3, pady=3, ipady=4)
-        self.combo_frame.pack(pady=4)
-
-        ctk.CTkButton(self, text='Отметить', font=self.font,
-                      command=master.mark_kids).pack(fill=tkinter.X, padx=3, pady=3, ipady=4)
-        ctk.CTkButton(self, text='Ведомости', font=self.font,
-                      command=master.sheet).pack(fill=tkinter.X, padx=3, pady=3, ipady=4)
-
-    def get_group(self):
-        return self.combo_frame.cmb_group.get().split()[-1]
-
-    def get_month(self):
-        return self.combo_frame.cmb_month.get()
 
 
 class ComboFrame(ctk.CTkFrame):
@@ -153,7 +130,7 @@ class ComboFrame(ctk.CTkFrame):
         self.cmb_month.set(self.get_month_now())
         self.cmb_group = ctk.CTkComboBox(self, values=groups if groups else ['Пусто'], font=self.font)
         self.cmb_group.pack(side=tkinter.LEFT, padx=3)
-        self.cmb_month.pack(side=tkinter.LEFT, padx=3)
+        self.cmb_month.pack(side=tkinter.RIGHT, padx=3)
 
     def get_month_now(self):
         month_index = self.MONTH_NUMS.index(datetime.now().month)

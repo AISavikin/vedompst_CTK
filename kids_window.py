@@ -41,7 +41,7 @@ class KidsWindow(BaseWindowClass):
             self.focus_btn = btns[self.index]
         if event.keycode == 37:
             self.index -= 1
-            if self.index == -1:
+            if self.index < 0:
                 self.index = 2
             self.focus_btn = btns[self.index]
         if self.focus_btn:
