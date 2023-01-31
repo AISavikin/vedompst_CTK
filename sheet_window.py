@@ -18,7 +18,9 @@ class SheetWindow(BaseWindowClass):
         self.year = self.get_year(self.month_num)
         self.work_days = self.get_work_days(self.month_name)
         self.absent_dicts = [self.get_absent_dict(group)]
-
+        w = 610
+        h = 350
+        self.set_geometry(w, h)
         self.control_frame = ControlFrame(self)
         self.control_frame.pack()
 
@@ -99,7 +101,7 @@ class TableFrame(ctk.CTkFrame):
         self.table.column('name', width=220, anchor='n')
         self.table.heading('name', text='Фамилия, Имя')
         self.paste(absent_dicts)
-        self.table.pack()
+        self.table.pack(padx=10, pady=10)
 
     def paste(self, absent_dicts):
         self.table.tag_configure('white', foreground='white', background='#1a1a1a', font=self.font)

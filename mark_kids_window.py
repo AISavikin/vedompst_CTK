@@ -15,7 +15,9 @@ class MarkKidsWindow(BaseWindowClass):
         self.year = self.get_year(self.month_num)
         # Настройка окна
         self.title("Отметить")
-
+        w = 255
+        h = 385
+        self.set_geometry(w, h)
         self.kids = [student for student in Student.select().where(Student.group == self.group).order_by(Student.name)]
 
         self.info_frame = InfoFrame(self)
@@ -23,7 +25,7 @@ class MarkKidsWindow(BaseWindowClass):
 
         self.info_frame.pack(padx=10)
         self.kids_frame.pack(pady=10, padx=15)
-        ctk.CTkButton(self, text='Отметить', command=self.mark_kids).pack(pady=10)
+        ctk.CTkButton(self, text='Отметить', command=self.mark_kids, font=self.font).pack(pady=10)
 
         day = self.info_frame.get_date()
         self.paste_absents(day)

@@ -19,20 +19,40 @@ class KidsWindow(BaseWindowClass):
         self.control_frame = ControlFrame(self)
         self.table_frame = TableFrame(self, self.group)
 
-
         self.control_frame.pack(side=tkinter.LEFT, padx=20)
         self.table_frame.pack(side=tkinter.LEFT)
         # Привязка событий
         self.bind('<<TreeviewSelect>>', self.table_frame.paste)
         self.bind('<space>', self.change_active)
+        self.bind('<Right>', self.choose_button)
+        self.bind('<Left>', self.choose_button)
+        self.bind('<Return>', self.choose_button)
 
+        self.index = -1
+        self.focus_btn = None
 
+    def choose_button(self, event):
+        btns = [self.control_frame.add_btn, self.control_frame.del_btn, self.control_frame.cng_btn]
+        [i.configure(fg_color='#1f538d') for i in btns]
+        if event.keycode == 39:
+            self.index += 1
+            if self.index == 3:
+                self.index = 0
+            self.focus_btn = btns[self.index]
+        if event.keycode == 37:
+            self.index -= 1
+            if self.index == -1:
+                self.index = 2
+            self.focus_btn = btns[self.index]
+        if self.focus_btn:
+            self.focus_btn.configure(fg_color='#08359D')
+        if event.keycode == 13 and self.focus_btn:
+            self.focus_btn.cget('command')()
 
     def refresh(self):
         self.table_frame.clean_table()
         self.control_frame.entry.delete(0, tkinter.END)
         self.table_frame.gen_table()
-
 
     def change_active(self, event):
         name = self.table_frame.get_name_from_table()
@@ -44,6 +64,7 @@ class KidsWindow(BaseWindowClass):
 
     def add_kid(self):
         name = self.control_frame.get_entry()
+        name = ' '.join(map(str.capitalize, name.split()))
         if name:
             try:
                 Student.create(name=name, group=self.group, added=self.date_now, active=True)
@@ -66,7 +87,6 @@ class KidsWindow(BaseWindowClass):
         Student.delete().where(Student.id == kids_id).execute()
         self.refresh()
 
-
     def change_kid(self):
         name = self.table_frame.get_name_from_table()
         if not name:
@@ -78,26 +98,21 @@ class KidsWindow(BaseWindowClass):
         self.refresh()
 
 
-
-
-
 class ControlFrame(ctk.CTkFrame):
     def __init__(self, master: KidsWindow):
         super().__init__(master)
         ctk.CTkLabel(self, text='Фамилия и имя', font=master.font).grid(row=0, columnspan=3)
         self.entry = ctk.CTkEntry(self, font=master.font, width=250)
         self.entry.grid(row=1, columnspan=3, pady=10)
-        ctk.CTkButton(self, text='Добавить', command=master.add_kid, width=10, font=master.font).grid(row=2, column=0,
-                                                                                                      padx=3)
-        ctk.CTkButton(self, text='Удалить', command=master.del_kid, width=10, font=master.font).grid(row=2, column=1,
-                                                                                                     padx=3)
-        ctk.CTkButton(self, text='Исправить', command=master.change_kid, width=10, font=master.font).grid(row=2,
+        self.add_btn = ctk.CTkButton(self, text='Добавить', command=master.add_kid, width=10, font=master.font)
+        self.add_btn.grid(row=2, column=0, padx=3)
+        self.del_btn = ctk.CTkButton(self, text='Удалить', command=master.del_kid, width=10, font=master.font)
+        self.del_btn.grid(row=2, column=1, padx=3)
+        self.cng_btn = ctk.CTkButton(self, text='Исправить', command=master.change_kid, width=10, font=master.font)
+        self.cng_btn.grid(row=2, column=2, padx=3)
 
-                                                                                                          column=2,
-                                                                                                          padx=3)
     def get_entry(self):
         return self.entry.get()
-
 
 
 class TableFrame(ctk.CTkFrame):
@@ -149,3 +164,4 @@ class TableFrame(ctk.CTkFrame):
         if name:
             self.control_frame.entry.delete(0, tkinter.END)
             self.control_frame.entry.insert(0, name)
+

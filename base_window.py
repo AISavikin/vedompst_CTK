@@ -22,7 +22,7 @@ class BaseWindowClass(ctk.CTkToplevel):
         self.font = ctk.CTkFont(family='Times New Roman', size=20)
 
     def set_geometry(self, w, h):
-        self.geometry(f'{w}x{h}+{self.w_screen // 2 - w // 2}+{self.h_screen // 2 - h // 2}')
+        self.geometry(f'+{self.w_screen // 2 - w // 2}+{self.h_screen // 2 - h // 2}')
 
     def get_work_days(self, month: str):
         month_num = self.get_month_num(month)
@@ -44,7 +44,3 @@ class BaseWindowClass(ctk.CTkToplevel):
         year = cls.get_year(month_num)
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
 
-    @staticmethod
-    def get_month_now():
-        month_index = MONTH_NUMS.index(datetime.now().month)
-        return MONTH_NAMES[month_index]
