@@ -27,7 +27,7 @@ class MainWindow(ctk.CTk):
         h = 250
         self.w_screen = self.winfo_screenwidth()
         self.h_screen = self.winfo_screenheight()
-        self.geometry(f'+{self.w_screen // 2 - w // 2}+{self.h_screen // 2 - h // 2}')
+        self.geometry(f'+{self.w_screen // 2 - w // 2}+30')
         self.font = ctk.CTkFont(family='Times New Roman', size=font_size)
 
         self.title("Ведомости")

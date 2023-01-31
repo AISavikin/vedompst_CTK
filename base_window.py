@@ -23,7 +23,7 @@ class BaseWindowClass(ctk.CTkToplevel):
         self.font = ctk.CTkFont(family='Times New Roman', size=settings['font_size'])
 
     def set_geometry(self, w, h):
-        self.geometry(f'+{self.w_screen // 2 - w // 2}+{self.h_screen // 2 - h // 2}')
+        self.geometry(f'+{self.w_screen // 2 - w // 2}+30')
 
     def get_work_days(self, month: str):
         month_num = self.get_month_num(month)
