@@ -98,7 +98,7 @@ class FolderFrame(ctk.CTkFrame):
         self.entry.configure(state='readonly')
 
     def get_folder_sheet(self):
-        return self.entry.get()
+        return self.entry.get() + '/'
 
 
 class ScreenShotFrame(ctk.CTkFrame):
@@ -121,7 +121,7 @@ class ScreenShotFrame(ctk.CTkFrame):
         self.entry.configure(state='readonly')
 
     def get_folder_screenshot(self):
-        return self.entry.get()
+        return self.entry.get() + '/'
 
 
 class WorkDaysFrame(ctk.CTkFrame):

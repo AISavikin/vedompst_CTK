@@ -1,4 +1,4 @@
-DB: databas.db
+DB: database.db
 MONTH_NAMES:
 - Сентябрь
 - Октябрь
@@ -19,8 +19,8 @@ MONTH_NUMS:
 - 3
 - 4
 - 5
-PATH_SCREENSHOT: E:/Desktop/ТЕСТ/Сериншоты
-PATH_SHEET: E:/Desktop/ТЕСТ/Ведомости
+PATH_SCREENSHOT: E:/Desktop/ТЕСТ/
+PATH_SHEET: E:/Desktop/ТЕСТ/
 WORK_DAYS:
 - 2
 - 4
