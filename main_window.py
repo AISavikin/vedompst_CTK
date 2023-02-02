@@ -10,6 +10,8 @@ from datetime import datetime
 from database import create_database
 from PIL import Image
 import yaml
+import os
+
 
 
 with open('settings.yaml', encoding='utf-8') as f:
@@ -91,7 +93,8 @@ class AddGroup(ctk.CTkToplevel):
         self.group = ctk.StringVar()
         self.geometry(f'180x120+{parent.winfo_screenwidth() // 2}+{parent.winfo_screenheight() // 2}')
         ctk.CTkLabel(self, text='Номер группы', font=parent.font).pack(pady=5, padx=5)
-        ctk.CTkEntry(self, textvariable=self.group, font=parent.font).pack(pady=5, padx=5)
+        self.entry = ctk.CTkEntry(self, textvariable=self.group, font=parent.font)
+        self.entry.pack(pady=5, padx=5)
         ctk.CTkButton(self, text="Ok", command=self.destroy, font=parent.font).pack(padx=10, pady=5)
         self.bind('<Return>', self.custom_destroy)
 

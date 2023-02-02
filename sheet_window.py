@@ -32,7 +32,6 @@ class SheetWindow(BaseWindowClass):
         work_days_from_db = [i.day for i in
                              Attendance.select().filter(month=self.month_num, student_id=kids[0], year=self.year)]
         self.work_days = list(set(work_days_from_db) | set(self.work_days))
-
         absent_dict = {}
         for kid in kids:
             absent_dict[kid.name] = {day: '' for day in self.work_days}
@@ -86,14 +85,14 @@ class TableFrame(ctk.CTkFrame):
     def __init__(self, master: SheetWindow):
         super().__init__(master)
         self.font = master.font
-        self.work_days = master.work_days
+        self.master = master
         self.absent_dicts = master.absent_dicts
 
         self.gen_table(self.absent_dicts)
 
     def gen_table(self, absent_dicts):
         ttk.Style().configure('Treeview', rowheight=25)
-        columns = ('№', 'name') + tuple(str(i) for i in self.work_days) + ('н', 'б')
+        columns = ('№', 'name') + tuple(str(i) for i in self.master.work_days) + ('н', 'б')
         self.table = ttk.Treeview(self, columns=columns, show='headings')
         for i in columns:
             self.table.heading(i, text=i)
@@ -110,7 +109,7 @@ class TableFrame(ctk.CTkFrame):
         for absent_dict in absent_dicts:
             for kid in sorted(absent_dict.keys()):
                 title = (str(num), kid)
-                absents = tuple(absent_dict[kid][i] for i in sorted(absent_dict[kid].keys(), key=int))
+                absents = tuple(absent_dict[kid].get(i, '') for i in self.master.work_days)
                 count = (absents.count('н'), absents.count('б'))
                 values = title + absents + count
                 self.table.insert("", tkinter.END, values=values, tags='white')

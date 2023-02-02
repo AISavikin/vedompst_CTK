@@ -111,12 +111,33 @@ class InfoFrame(ctk.CTkFrame):
     def get_date(self):
         return self.date.get().strip()
 
+class Node:
+    def __init__(self, data):
+        self.prev_node = None
+        self.next_node = None
+        self.data = data
+
+class LinkedList:
+    def __init__(self):
+        self.start_node = None
+    def add_node(self, data):
+        if self.start_node is None:
+            new_node = Node(data)
+            self.start_node = new_node
+            return
+        n = self.start_node
+        while n.next_node is not None:
+            n = n.next_node
+        new_node = Node(data)
+        n.next_node = new_node
+        new_node.prev_node = n
 
 class KidsFrame(ctk.CTkFrame):
+
     def __init__(self, master: MarkKidsWindow):
         super().__init__(master)
         self.entrys = []
-
+        focus_list = LinkedList()
         for ind, kid in enumerate(master.kids):
             label = ctk.CTkLabel(self, text=f'{kid.name}', font=master.font)
             label.grid(row=ind, column=0, sticky='w')
@@ -127,6 +148,9 @@ class KidsFrame(ctk.CTkFrame):
                 entry.configure(state='disabled', text_color='#4a83b2')
                 label.configure(text_color='#4a83b2')
             self.entrys.append(entry)
+        for entry in self.entrys:
+            focus_list.add_node(entry)
+        self.cur_focus = focus_list.start_node
 
     def get_absents(self):
         return [i.get() for i in self.entrys]
@@ -135,17 +159,17 @@ class KidsFrame(ctk.CTkFrame):
         if type(self.focus_get()) == MarkKidsWindow:
             self.entrys[0].focus()
             return
-        now_focus = self.focus_get()
-        prev_focus = now_focus.tk_focusPrev()
-        next_focus = now_focus.tk_focusNext()
-
         if event.keycode == 40:
-            next_focus.focus()
+            if self.cur_focus.next_node:
+                self.cur_focus = self.cur_focus.next_node
+                self.cur_focus.data.focus()
         if event.keycode == 38:
-            prev_focus.focus()
+            if self.cur_focus.prev_node:
+                self.cur_focus = self.cur_focus.prev_node
+                self.cur_focus.data.focus()
         if event.keycode == 37:
-            now_focus.delete(0, tkinter.END)
-            now_focus.insert(0, 'н')
+            self.cur_focus.data.delete(0, tkinter.END)
+            self.cur_focus.data.insert(0, 'н')
         if event.keycode == 39:
-            now_focus.delete(0, tkinter.END)
-            now_focus.insert(0, 'б')
+            self.cur_focus.data.delete(0, tkinter.END)
+            self.cur_focus.data.insert(0, 'б')

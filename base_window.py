@@ -6,6 +6,7 @@ import yaml
 with open('settings.yaml', encoding='utf-8') as f:
     settings = yaml.safe_load(f)
 
+
 class BaseWindowClass(ctk.CTkToplevel):
     settings = settings
     MONTH_NAMES = settings['MONTH_NAMES']
@@ -44,4 +45,3 @@ class BaseWindowClass(ctk.CTkToplevel):
     def get_weekend(cls, month_num: int):
         year = cls.get_year(month_num)
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
-
