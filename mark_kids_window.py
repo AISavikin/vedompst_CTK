@@ -26,7 +26,7 @@ class MarkKidsWindow(BaseWindowClass):
 
         self.info_frame.pack(padx=10)
         self.kids_frame.pack(pady=10, padx=15)
-        ctk.CTkButton(self, text='Отметить', command=self.mark_kids, font=self.font).pack(pady=10)
+        # ctk.CTkButton(self, text='Отметить', command=self.mark_kids, font=self.font).pack(pady=10)
 
         self.day = self.info_frame.get_date()
         self.paste_absents(self.day)
