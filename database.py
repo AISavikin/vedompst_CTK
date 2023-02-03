@@ -1,8 +1,13 @@
 from peewee import *
 import yaml
+import os
 
-with open('settings.yaml', encoding='utf-8') as f:
-    DB = yaml.safe_load(f)['DB']
+if not os.path.exists('settings.yaml'):
+    DB = 'database.db'
+
+else:
+    with open('settings.yaml', encoding='utf-8') as f:
+        DB = yaml.safe_load(f)['DB']
 
 db = SqliteDatabase(DB, pragmas={'foreign_keys': 1})
 

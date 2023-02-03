@@ -1,39 +1,64 @@
 import peewee
 import customtkinter as ctk
-import tkinter
-from tkinter import ttk, messagebox
+from tkinter import messagebox, ttk, LEFT, END, Entry
 from database import Student
-from base_window import BaseWindowClass
+from utils import Mixin
 
-
-class KidsWindow(BaseWindowClass):
+class KidsWindow(Mixin, ctk.CTkToplevel):
     def __init__(self, parent, group="1"):
         super().__init__(parent)
         self.group = group
+
         # Настройка окна
         w = 800
-        h = 500
-        self.set_geometry(w, h)
+        self.set_geometry(w)
         self.title("Ведомости")
-
+        self.font = parent.font
+        self.table_frame = TableFrame(self)
         self.control_frame = ControlFrame(self)
-        self.table_frame = TableFrame(self, self.group)
 
-        self.control_frame.pack(side=tkinter.LEFT, padx=20)
-        self.table_frame.pack(side=tkinter.LEFT)
+        self.control_frame.pack(side=LEFT, padx=20)
+        self.table_frame.pack(side=LEFT)
+
         # Привязка событий
         self.bind('<<TreeviewSelect>>', self.table_frame.paste)
-        self.bind('<space>', self.change_active)
-        self.bind('<Right>', self.choose_button)
-        self.bind('<Left>', self.choose_button)
-        self.bind('<Return>', self.choose_button)
+        self.bind('<space>', self.table_frame.change_active)
+        self.bind('<Right>', self.control_frame.choose_button)
+        self.bind('<Left>', self.control_frame.choose_button)
+        self.bind('<Down>', self.control_frame.choose_button)
+        self.bind('<Return>', self.control_frame.choose_button)
 
+    def refresh(self):
+        self.table_frame.clean_table()
+        self.control_frame.entry.delete(0, END)
+        self.table_frame.gen_table()
+
+
+class ControlFrame(ctk.CTkFrame):
+    def __init__(self, master: KidsWindow):
+        super().__init__(master)
+        self.master: KidsWindow = master
         self.index = -1
         self.focus_btn = None
+        ctk.CTkLabel(self, text='Фамилия и имя', font=master.font).grid(row=0, columnspan=3)
+        self.entry = ctk.CTkEntry(self, font=master.font, width=250)
+        self.entry.grid(row=1, columnspan=3, pady=10)
+        self.add_btn = ctk.CTkButton(self, text='Добавить', command=self.add_kid, width=10, font=master.font)
+        self.add_btn.grid(row=2, column=0, padx=3)
+        self.del_btn = ctk.CTkButton(self, text='Удалить', command=self.del_kid, width=10, font=master.font)
+        self.del_btn.grid(row=2, column=1, padx=3)
+        self.cng_btn = ctk.CTkButton(self, text='Исправить', command=self.change_kid, width=10, font=master.font)
+        self.cng_btn.grid(row=2, column=2, padx=3)
 
     def choose_button(self, event):
-        btns = [self.control_frame.add_btn, self.control_frame.del_btn, self.control_frame.cng_btn]
+        if event.keycode == 13 and self.focus_btn:
+            self.focus_btn.cget('command')()
+        if type(self.master.focus_get()) == Entry:
+            return
+        btns = [self.add_btn, self.del_btn, self.cng_btn]
         [i.configure(fg_color='#1f538d') for i in btns]
+        if event.keycode == 40:
+            btns[0].focus()
         if event.keycode == 39:
             self.index += 1
             if self.index == 3:
@@ -46,34 +71,20 @@ class KidsWindow(BaseWindowClass):
             self.focus_btn = btns[self.index]
         if self.focus_btn:
             self.focus_btn.configure(fg_color='#08359D')
-        if event.keycode == 13 and self.focus_btn:
-            self.focus_btn.cget('command')()
 
-    def refresh(self):
-        self.table_frame.clean_table()
-        self.control_frame.entry.delete(0, tkinter.END)
-        self.table_frame.gen_table()
-
-    def change_active(self, event):
-        name = self.table_frame.get_name_from_table()
-        if not name:
-            return
-        active = Student.get(Student.name == name).active
-        Student.update(active=not active).where(Student.name == name).execute()
-        self.refresh()
 
     def add_kid(self):
-        name = self.control_frame.get_entry()
+        name = self.entry.get()
         name = ' '.join(map(str.capitalize, name.split()))
         if name:
             try:
-                Student.create(name=name, group=self.group, added=self.date_now, active=True)
+                Student.create(name=name, group=self.master.group, added=self.master.date, active=True)
             except peewee.IntegrityError:
                 messagebox.showerror(title='Ошибка', message='Ученик с таким именем уже существует!')
-        self.refresh()
+        self.master.refresh()
 
     def del_kid(self):
-        name = self.control_frame.get_entry()
+        name = self.master.table_frame.get_name_from_table()
         try:
             kids_id = Student.get(name=name)
         except peewee.DoesNotExist:
@@ -85,55 +96,38 @@ class KidsWindow(BaseWindowClass):
         if not messagebox.askyesno(title='Вы уверены?', message='Данное действие не обратимо\nВсё равно выполнить?'):
             return
         Student.delete().where(Student.id == kids_id).execute()
-        self.refresh()
+        self.master.refresh()
 
     def change_kid(self):
-        name = self.table_frame.get_name_from_table()
+        name = self.master.table_frame.get_name_from_table()
         if not name:
             messagebox.showerror(title='Ошибка', message='Введите имя!')
             return
         kids_id = Student.get(name=name)
-        new_name = self.control_frame.get_entry()
+        new_name = self.entry.get()
         Student.update({Student.name: new_name}).where(Student.id == kids_id).execute()
-        self.refresh()
-
-
-class ControlFrame(ctk.CTkFrame):
-    def __init__(self, master: KidsWindow):
-        super().__init__(master)
-        ctk.CTkLabel(self, text='Фамилия и имя', font=master.font).grid(row=0, columnspan=3)
-        self.entry = ctk.CTkEntry(self, font=master.font, width=250)
-        self.entry.grid(row=1, columnspan=3, pady=10)
-        self.add_btn = ctk.CTkButton(self, text='Добавить', command=master.add_kid, width=10, font=master.font)
-        self.add_btn.grid(row=2, column=0, padx=3)
-        self.del_btn = ctk.CTkButton(self, text='Удалить', command=master.del_kid, width=10, font=master.font)
-        self.del_btn.grid(row=2, column=1, padx=3)
-        self.cng_btn = ctk.CTkButton(self, text='Исправить', command=master.change_kid, width=10, font=master.font)
-        self.cng_btn.grid(row=2, column=2, padx=3)
-
-    def get_entry(self):
-        return self.entry.get()
+        self.master.refresh()
 
 
 class TableFrame(ctk.CTkFrame):
-    def __init__(self, master: KidsWindow, group):
+    def __init__(self, master: KidsWindow):
         super().__init__(master)
-        self.group = group
-        self.control_frame = master.control_frame
+        self.group = master.group
+        self.master: KidsWindow = master
         s = ttk.Style()
         s.configure('Treeview', rowheight=25)
-        ctk.CTkLabel(self, text=f"Группа {master.group}", font=master.font).grid(row=0, pady=10)
+        ctk.CTkLabel(self, text=f"Группа {master.group}", font=master.font).pack(pady=10)
         columns = ('№', 'name', 'added')
         self.table = ttk.Treeview(master=self, columns=columns, show='headings', height=15)
-        self.table.tag_configure('white', foreground='white', background='#1a1a1a', font=master.font)
-        self.table.tag_configure('red', foreground='#4a83b2', background='#1a1a1a', font=master.font)
+        self.table.tag_configure('normal', foreground='white', background='#1a1a1a', font=master.font)
+        self.table.tag_configure('mark', foreground='#4a83b2', background='#1a1a1a', font=master.font)
         self.table.heading('№', text='№')
         self.table.heading('name', text='Имя')
         self.table.heading('added', text='Добавлен')
         self.table.column('№', width=30, anchor='n')
-        self.table.column('name', width=250, anchor='n', stretch=tkinter.NO)
+        self.table.column('name', width=250, anchor='n')
         self.table.column('added', width=150, anchor='n')
-        self.table.grid(row=1)
+        self.table.pack()
         self.gen_table()
 
     def gen_table(self):
@@ -141,12 +135,12 @@ class TableFrame(ctk.CTkFrame):
         data = [(cnt, i.name, f'{i.added:%d.%m.%y}', i.active) for cnt, i in enumerate(kids, 1)]
         for kid in data:
             if kid[-1]:
-                tag = 'white'
+                tag = 'normal'
             else:
-                tag = 'red'
-            self.table.insert("", tkinter.END, values=kid, tags=tag, )
+                tag = 'mark'
+            self.table.insert("", END, values=kid, tags=tag, )
         for space in range(15 - len(data)):
-            self.table.insert("", tkinter.END, values=('', '', ''), tags='white')
+            self.table.insert("", END, values=('', '', ''), tags='normal')
 
     def clean_table(self):
         for i in self.table.get_children():
@@ -162,6 +156,13 @@ class TableFrame(ctk.CTkFrame):
     def paste(self, event):
         name = self.get_name_from_table()
         if name:
-            self.control_frame.entry.delete(0, tkinter.END)
-            self.control_frame.entry.insert(0, name)
+            self.master.control_frame.entry.delete(0, END)
+            self.master.control_frame.entry.insert(0, name)
 
+    def change_active(self, event):
+        name = self.get_name_from_table()
+        if not name:
+            return
+        active = Student.get(Student.name == name).active
+        Student.update(active=not active).where(Student.name == name).execute()
+        self.master.refresh()

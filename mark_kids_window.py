@@ -104,7 +104,7 @@ class InfoFrame(ctk.CTkFrame):
                                         font=master.font, command=master.paste_absents)
         self.cmb_date.pack(side=tkinter.LEFT, padx=10)
         ctk.CTkLabel(cmb_frame, text=f'{master.month}', font=master.font).pack(side=tkinter.LEFT)
-        self.date.set(f'{master.date_now: %d}')
+        self.date.set(f'{master.date_now:%d}')
         ctk.CTkLabel(self, text=f'Группа {master.group}', font=master.font).pack(pady=10)
         cmb_frame.pack(pady=10)
 

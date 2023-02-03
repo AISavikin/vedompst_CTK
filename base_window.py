@@ -9,8 +9,8 @@ with open('settings.yaml', encoding='utf-8') as f:
 
 class BaseWindowClass(ctk.CTkToplevel):
     settings = settings
-    MONTH_NAMES = settings['MONTH_NAMES']
-    MONTH_NUMS = settings['MONTH_NUMS']
+    # MONTH_NAMES = settings['MONTH_NAMES']
+    # MONTH_NUMS = settings['MONTH_NUMS']
     YEARS = settings['YEARS']
     WORK_DAYS = settings['WORK_DAYS']
     PATH_SHEET = settings['PATH_SHEET']
@@ -21,7 +21,7 @@ class BaseWindowClass(ctk.CTkToplevel):
         self.w_screen = self.winfo_screenwidth()
         self.h_screen = self.winfo_screenheight()
         self.date_now = datetime.now()
-        self.font = ctk.CTkFont(family='Times New Roman', size=settings['font_size'])
+        self.font = ctk.CTkFont(family='Times New Roman', size=settings['FONT_SIZE'])
 
     def set_geometry(self, w, h):
         self.geometry(f'+{self.w_screen // 2 - w // 2}+30')
