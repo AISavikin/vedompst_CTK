@@ -13,7 +13,7 @@ class Mixin:
 
     @staticmethod
     def get_settings():
-        if not os.path.exists('settings_new.yaml'):
+        if not os.path.exists('settings.yaml'):
             settings = {'DB': 'database.db',
                         'PATH_SCREENSHOT': 'Скриншоты/',
                         'PATH_SHEET': 'Ведомости/',

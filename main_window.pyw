@@ -1,14 +1,13 @@
 from utils import Mixin
 import customtkinter as ctk
 from tkinter import messagebox, LEFT, RIGHT, X
-from database import Student
+from database import Student, create_database
 from kids_window import KidsWindow
 from mark_kids_window import MarkKidsWindow
 from sheet_window import SheetWindow
 from setting_window import SettingsWindow
 from PIL import Image
 
-# from lab import SheetWindow
 
 class MainWindow(Mixin, ctk.CTk):
 
@@ -154,5 +153,5 @@ class MainFrame(ctk.CTkFrame):
 
 
 if __name__ == '__main__':
+    create_database()
     MainWindow().mainloop()
-    # test()

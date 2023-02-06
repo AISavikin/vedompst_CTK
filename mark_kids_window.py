@@ -38,7 +38,6 @@ class MarkKidsWindow(Mixin, ctk.CTkToplevel):
 
     def mark_kids(self, *event):
         absents = self.kids_frame.get_absents()
-
         if not all(absents):
             confirm = messagebox.askyesno(title='Вы уверены?', message='Вы отметили не всех! Сохранить?')
             if not confirm:
