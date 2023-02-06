@@ -75,16 +75,16 @@ class FolderFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(self, text=text, font=parent.font).pack()
         self.entry = ctk.CTkEntry(self, width=250, font=parent.font)
-        self.entry.pack(side=tkinter.LEFT, padx=5, pady=3)
+        self.entry.pack(side=LEFT, padx=5, pady=3)
         self.entry.insert(0, path)
         self.entry.configure(state='readonly')
         ctk.CTkButton(self, text='Выбрать', command=self.btn_command, width=100,
-                      font=parent.font).pack(side=tkinter.RIGHT)
+                      font=parent.font).pack(side=RIGHT)
 
     def btn_command(self):
         self.entry.configure(state='normal')
         path = filedialog.askdirectory()
-        self.entry.delete(0, tkinter.END)
+        self.entry.delete(0, END)
         self.entry.insert(0, path)
         self.entry.configure(state='readonly')
 
