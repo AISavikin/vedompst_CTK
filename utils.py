@@ -6,6 +6,7 @@ from calendar import Calendar
 from database import Student, Attendance
 from customtkinter.windows import widgets
 
+
 class Mixin:
     MONTH_NAMES = ['Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май']
     MONTH_NUMS = [9, 10, 11, 12, 1, 2, 3, 4, 5]
@@ -54,7 +55,6 @@ class Mixin:
         year = self.get_year(month_num)
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
 
-
     @staticmethod
     def get_absents_from_db(kids: list[Student], day: Union[int, str], month_num: Union[int, str],
                             year: Union[int, str]):
@@ -74,6 +74,7 @@ class Node:
         self.next_node = None
         self.element = element
         self.state = element.cget('state')
+
 
 class CustomFocus:
     def __init__(self, elements):
@@ -119,7 +120,6 @@ class CustomFocus:
             node.prev_node.focus = True
             self.focus_element = self.find_focus().element
 
-
     def add_node(self, element):
         new_node = Node(element)
         if self.start_node is None:
@@ -131,4 +131,3 @@ class CustomFocus:
             n = n.next_node
         n.next_node = new_node
         new_node.prev_node = n
-

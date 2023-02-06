@@ -1,9 +1,7 @@
-from typing import Union
 import customtkinter as ctk
 from tkinter import messagebox, ttk, END
-from database import Student, Attendance
 from openpyxl import load_workbook, styles
-from utils import Mixin
+from utils import *
 import os
 
 
@@ -48,18 +46,13 @@ class ControlFrame(ctk.CTkFrame):
         self.label.grid(row=0, columnspan=2, padx=5, pady=7)
         self.ext_group = ctk.CTkComboBox(self, values=group_nums, font=master.font)
         self.ext_group.grid(row=1, column=0, padx=5, pady=7, sticky='nesw')
-        ctk.CTkButton(self, text='Добавить', command=master.table_frame.add_group, font=master.font).grid(row=1,
-                                                                                                          column=1,
-                                                                                                          padx=5,
-                                                                                                          pady=7,
-                                                                                                          sticky='nesw')
+        ctk.CTkButton(self, text='Добавить', command=master.table_frame.add_group,
+                      font=master.font).grid(row=1, column=1, padx=5, pady=7, sticky='nesw')
         self.close_day = ctk.CTkComboBox(self, values=[str(i) for i in range(1, 31)], font=master.font, width=80)
         self.close_day.grid(row=2, column=0, padx=5, pady=7)
         self.close_day.set(f'{master.date:%d}')
-        ctk.CTkButton(self, text='Закрыть ведомость', command=master.close_sheet, font=master.font).grid(row=2,
-                                                                                                         column=1,
-                                                                                                         sticky='nesw',
-                                                                                                         padx=5, pady=7)
+        ctk.CTkButton(self, text='Закрыть ведомость', command=master.close_sheet,
+                      font=master.font).grid(row=2, column=1, sticky='nesw', padx=5, pady=7)
 
 
 class TableFrame(ctk.CTkFrame):
@@ -78,8 +71,8 @@ class TableFrame(ctk.CTkFrame):
 
     def get_absent_dict(self, group: Union[str, int]) -> dict:
         kids = Student.select().filter(group=group).order_by(Student.name)
-        work_days_from_db = [i.day for i in
-                             Attendance.select().filter(month=self.month_num, student_id=kids[0], year=self.year)]
+        work_days_from_db = [i.day for i in Attendance.select().filter(month=self.month_num, student_id=kids[0],
+                                                                       year=self.year)]
         self.work_days = list(set(work_days_from_db) | set(self.work_days))
         absent_dict = {}
         for kid in kids:

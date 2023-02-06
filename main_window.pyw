@@ -1,7 +1,7 @@
-from utils import Mixin
 import customtkinter as ctk
 from tkinter import messagebox, LEFT, RIGHT, X
-from database import Student, create_database
+from database import create_database
+from utils import *
 from kids_window import KidsWindow
 from mark_kids_window import MarkKidsWindow
 from sheet_window import SheetWindow

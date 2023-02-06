@@ -1,8 +1,5 @@
-from typing import Union
 import customtkinter as ctk
-import tkinter
 from tkinter import messagebox, LEFT, END
-from database import Student, Attendance
 from utils import *
 import os
 from PIL import ImageGrab

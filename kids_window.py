@@ -1,7 +1,6 @@
 import peewee
 import customtkinter as ctk
 from tkinter import messagebox, ttk, LEFT, END, Entry, Event
-from database import Student
 from utils import *
 
 
