@@ -58,7 +58,8 @@ class MarkKidsWindow(Mixin, ctk.CTkToplevel):
             os.makedirs(path)
         w, h, x, y = self.get_window_size(self)
         scr = ImageGrab.grab(bbox=(x, y, x + w, y + h + 50))
-        path += f'/{self.date:%d.%m}-Группа_{self.group}.jpg'
+        date = self.info_frame.get_date()
+        path += f'/{date}-Группа_{self.group}.jpg'
         if os.path.exists(path):
             if not messagebox.askyesno(title='Внимание!',
                                        message='Скриншот с отмеченными учениками уже существует! Перезаписать?'):

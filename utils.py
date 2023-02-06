@@ -1,11 +1,13 @@
 from typing import Union
 from datetime import datetime
 import os
+import requests
+from requests.exceptions import ConnectionError
 import yaml
 from calendar import Calendar
 from database import Student, Attendance
 from customtkinter.windows import widgets
-
+from tkinter import messagebox
 
 class Mixin:
     MONTH_NAMES = ['Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май']
@@ -53,7 +55,25 @@ class Mixin:
 
     def get_weekend(self, month_num: int):
         year = self.get_year(month_num)
-        return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
+        url = f'https://isdayoff.ru/api/getdata?year={year}&month={month_num:02}&delimeter=.'
+        try:
+            response = requests.get(url)
+        except ConnectionError:
+            messagebox.showerror(title='Ошибка соединения', message='Праздничные дни не будут учтены!')
+            return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
+        if response.status_code != 200:
+            messagebox.showerror(title='Ошибка сервера', message=f'Код ошибки {response.status_code}'
+                                                                 f'\nПраздничные дни не будут учтены!')
+            return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
+
+        return [day for day, i in enumerate(response.text.split('.'), 1) if i == '1']
+
+    def get_weekend_net(self, month_num: int):
+        year = self.get_year(month_num)
+        url = f'https://isdayoff.ru/api/getdata?year={year}&month={month_num:02}&delimeter=.'
+        r = requests.get(url).text.split('.')
+        return [day for day, i in enumerate(r, 1) if i == '1']
+
 
     @staticmethod
     def get_absents_from_db(kids: list[Student], day: Union[int, str], month_num: Union[int, str],
