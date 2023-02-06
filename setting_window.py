@@ -35,10 +35,10 @@ class SettingsWindow(Mixin, ctk.CTkToplevel):
                     'YEARS': self.year_frame.get_year(),
                     'FONT_SIZE': self.font_frame.get_font_size()}
 
-        with open('settings_new.yaml', 'w', encoding='utf-8') as f:
+        with open('settings.yaml', 'w', encoding='utf-8') as f:
             yaml.dump(settings, f, allow_unicode=True)
-
-        messagebox.showinfo(title='Настройки', message='Настройки вступят в силу после перезагрузки.')
+        if self.settings['FONT_SIZE'] != settings['FONT_SIZE']:
+            messagebox.showinfo(title='Настройки', message='Настройки вступят в силу после перезагрузки.')
         self.destroy()
 
 

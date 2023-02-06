@@ -21,9 +21,9 @@ class Mixin:
                         'YEARS': [2022, 2023],
                         'FONT_SIZE': 20}
 
-            with open('settings_new.yaml', 'w', encoding='utf-8') as f:
+            with open('settings.yaml', 'w', encoding='utf-8') as f:
                 yaml.dump(settings, f, allow_unicode=True)
-        with open('settings_new.yaml', encoding='utf-8') as f:
+        with open('settings.yaml', encoding='utf-8') as f:
             settings = yaml.safe_load(f)
         return settings
 

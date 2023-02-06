@@ -152,7 +152,7 @@ class CloseSheet:
     def check_directory(self):
         """Проверяет существует ли директория, и создает если необходимо"""
         if not os.path.exists(self.path_sheet):
-            os.mkdir(self.path_sheet)
+            os.makedirs(self.path_sheet)
 
     def write_data(self):
         wb = load_workbook('Template.xlsx')
