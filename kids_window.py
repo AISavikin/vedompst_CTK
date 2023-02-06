@@ -50,11 +50,13 @@ class ControlFrame(ctk.CTkFrame):
         self.cng_btn = ctk.CTkButton(self, text='Исправить', command=self.change_kid, width=10, font=master.font)
         self.cng_btn.grid(row=2, column=2, padx=3)
 
+    # todo привести функцию ы порядок
     def choose_button(self, event):
+        # print(event.keysym)
         if event.keycode == 13 and self.focus_btn:
             self.focus_btn.cget('command')()
-        if type(self.master.focus_get()) == Entry:
-            return
+        # if type(self.master.focus_get()) == Entry:
+        #     return
         btns = [self.add_btn, self.del_btn, self.cng_btn]
         [i.configure(fg_color='#1f538d') for i in btns]
         if event.keycode == 40:

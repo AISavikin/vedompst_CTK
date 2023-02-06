@@ -8,8 +8,7 @@ from sheet_window import SheetWindow
 from setting_window import SettingsWindow
 from PIL import Image
 
-
-# from lab import KidsWindow
+# from lab import MarkKidsWindow
 
 class MainWindow(Mixin, ctk.CTk):
 
@@ -18,10 +17,10 @@ class MainWindow(Mixin, ctk.CTk):
         # Настройка окна
         ctk.set_appearance_mode("Dark")
         ctk.set_default_color_theme("dark-blue")
-        self.settings = self.get_settings()
         w = 300
         self.set_geometry(w)
-        self.font = ctk.CTkFont(family='Times New Roman', size=self.settings['FONT_SIZE'])
+        font_size = self.get_settings()['FONT_SIZE']
+        self.font = ctk.CTkFont(family='Times New Roman', size=font_size)
         self.title("Ведомости")
 
         self.main_frame = MainFrame(self)
@@ -81,8 +80,7 @@ class AddGroup(ctk.CTkToplevel):
     def __init__(self, parent: MainWindow):
         super().__init__(parent)
         self.group = ctk.StringVar()
-        w, h = map(int, parent.get_window_size().split('+')[0].split('x'))
-        x, y = map(int, parent.get_window_size().split('+')[1:])
+        w, h, x, y = parent.get_window_size(parent)
         self.geometry(f'180x120+{x + w // 4}+{y + h // 4}')
         ctk.CTkLabel(self, text='Номер группы', font=parent.font).pack(pady=5, padx=5)
         ctk.CTkEntry(self, textvariable=self.group, font=parent.font).pack(pady=5, padx=5)
@@ -103,7 +101,7 @@ class MainFrame(ctk.CTkFrame):
     def __init__(self, master: MainWindow):
         super().__init__(master)
         # Переменные
-        self.master = master
+        self.master: MainWindow = master
         self.font = master.font
         img = ctk.CTkImage(dark_image=Image.open('settings.png'))
         # фреймы
