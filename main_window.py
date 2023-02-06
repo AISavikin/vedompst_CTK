@@ -8,7 +8,7 @@ from sheet_window import SheetWindow
 from setting_window import SettingsWindow
 from PIL import Image
 
-# from lab import MarkKidsWindow
+# from lab import SheetWindow
 
 class MainWindow(Mixin, ctk.CTk):
 

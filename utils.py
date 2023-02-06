@@ -41,14 +41,19 @@ class Mixin:
         return self.MONTH_NUMS[self.MONTH_NAMES.index(month)]
 
     def get_year(self, month_num: int):
-        years = self.get_settings()['YEARS']
-        return years[0] if month_num in (9, 10, 11, 12) else years[1]
+        year = self.get_settings()['YEARS']
+        return year[0] if month_num in (9, 10, 11, 12) else year[1]
 
     def get_work_days(self, month: str):
         month_num = self.get_month_num(month)
         year = self.get_year(month_num)
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if
                 day[0] != 0 and day[1] in self.get_settings()['WORK_DAYS']]
+
+    def get_weekend(self, month_num: int):
+        year = self.get_year(month_num)
+        return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
+
 
     @staticmethod
     def get_absents_from_db(kids: list[Student], day: Union[int, str], month_num: Union[int, str],

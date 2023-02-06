@@ -1,31 +1,80 @@
 from typing import Union
 import customtkinter as ctk
-import tkinter
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, END
 from database import Student, Attendance
-from base_window import BaseWindowClass
 from openpyxl import load_workbook, styles
+from utils import Mixin
 import os
 
 
-class SheetWindow(BaseWindowClass):
-    def __init__(self, parent, group, month):
+class SheetWindow(Mixin, ctk.CTkToplevel):
+    def __init__(self, parent, group, month_name: str):
         super().__init__(parent)
         self.title('Ведомости')
         self.group = group
-        self.month_name = month
-        self.month_num = self.get_month_num(month)
-        self.year = self.get_year(self.month_num)
-        self.work_days = self.get_work_days(self.month_name)
-        self.absent_dicts = [self.get_absent_dict(group)]
+        self.month_name = month_name
+        self.font = parent.font
         w = 610
-        h = 350
-        self.set_geometry(w, h)
-        self.control_frame = ControlFrame(self)
-        self.control_frame.pack()
+        self.set_geometry(w)
 
         self.table_frame = TableFrame(self)
+        self.control_frame = ControlFrame(self)
+
+        self.control_frame.pack()
         self.table_frame.pack()
+
+    def close_sheet(self):
+        month_num = self.get_month_num(self.month_name)
+        absent_dicts = self.table_frame.absent_dicts
+        work_days = self.table_frame.work_days
+        path_sheet = self.get_settings()['PATH_SHEET']
+        path_screenshot = self.get_settings()['PATH_SCREENSHOT']
+        group = self.control_frame.label.cget('text')
+        weekend = self.get_weekend(month_num)
+        close_day = self.control_frame.close_day.get()
+        month_name = self.month_name
+        year = self.get_year(month_num)
+        CloseSheet(absent_dicts, work_days, path_sheet, path_screenshot, group, weekend, month_name, year,
+                   close_day).save()
+        messagebox.showinfo('Сохранено', message=f'Ведомость {group} сохранена, успешно.')
+        self.destroy()
+
+
+class ControlFrame(ctk.CTkFrame):
+    def __init__(self, master: SheetWindow):
+        super().__init__(master)
+        group_nums = [f'Группа {num}' for num in set(i.group for i in Student.select()) if str(num) != master.group]
+        self.label = ctk.CTkLabel(self, text=f'Группа {master.group} {master.month_name}', font=master.font)
+        self.label.grid(row=0, columnspan=2, padx=5, pady=7)
+        self.ext_group = ctk.CTkComboBox(self, values=group_nums, font=master.font)
+        self.ext_group.grid(row=1, column=0, padx=5, pady=7, sticky='nesw')
+        ctk.CTkButton(self, text='Добавить', command=master.table_frame.add_group, font=master.font).grid(row=1,
+                                                                                                          column=1,
+                                                                                                          padx=5,
+                                                                                                          pady=7,
+                                                                                                          sticky='nesw')
+        self.close_day = ctk.CTkComboBox(self, values=[str(i) for i in range(1, 31)], font=master.font, width=80)
+        self.close_day.grid(row=2, column=0, padx=5, pady=7)
+        self.close_day.set(f'{master.date:%d}')
+        ctk.CTkButton(self, text='Закрыть ведомость', command=master.close_sheet, font=master.font).grid(row=2,
+                                                                                                         column=1,
+                                                                                                         sticky='nesw',
+                                                                                                         padx=5, pady=7)
+
+
+class TableFrame(ctk.CTkFrame):
+    def __init__(self, master: SheetWindow):
+        super().__init__(master)
+        self.master: SheetWindow = master
+        self.font = master.font
+        self.group = master.group
+        self.month_name = master.month_name
+        self.month_num = master.get_month_num(self.month_name)
+        self.year = master.get_year(self.month_num)
+        self.work_days = master.get_work_days(self.month_name)
+
+        self.absent_dicts = [self.get_absent_dict(self.group)]
+        self.gen_table(self.absent_dicts)
 
     def get_absent_dict(self, group: Union[str, int]) -> dict:
         kids = Student.select().filter(group=group).order_by(Student.name)
@@ -42,57 +91,9 @@ class SheetWindow(BaseWindowClass):
 
         return absent_dict
 
-    def close_sheet(self):
-        close_day = self.control_frame.close_day.get()
-        group = self.control_frame.label.cget('text')
-        weekend = self.get_weekend(self.month_num)
-        CloseSheet(self.absent_dicts, self.work_days, self.PATH_SHEET, self.PATH_SCREENSHOT, group, weekend,
-                   self.month_name, self.year, close_day).save()
-        messagebox.showinfo('Сохранено', message=f'Ведомость {group} сохранена, успешно.')
-        self.destroy()
-
-    def add_group(self):
-        groups = self.control_frame.label.cget('text').split()[1:-1]
-        ext_group = self.control_frame.ext_group.get().split()[1]
-        groups.append(ext_group)
-        ext_absent_dict = self.get_absent_dict(ext_group)
-        self.absent_dicts.append(ext_absent_dict)
-        self.control_frame.label.configure(text=f'Группа {",".join(groups)} {self.month_name}')
-        self.table_frame.table.destroy()
-        self.table_frame.gen_table(self.absent_dicts)
-
-
-class ControlFrame(ctk.CTkFrame):
-    def __init__(self, master: SheetWindow):
-        super().__init__(master)
-        group_nums = [f'Группа {num}' for num in set(i.group for i in Student.select()) if str(num) != master.group]
-        self.label = ctk.CTkLabel(self, text=f'Группа {master.group} {master.month_name}', font=master.font)
-        self.label.grid(row=0, columnspan=2, padx=5, pady=7)
-        self.ext_group = ctk.CTkComboBox(self, values=group_nums, font=master.font)
-        self.ext_group.grid(row=1, column=0, padx=5, pady=7, sticky='nesw')
-        ctk.CTkButton(self, text='Добавить', command=master.add_group, font=master.font).grid(row=1, column=1, padx=5,
-                                                                                              pady=7, sticky='nesw')
-        self.close_day = ctk.CTkComboBox(self, values=[str(i) for i in range(1, 31)], font=master.font, width=80)
-        self.close_day.grid(row=2, column=0, padx=5, pady=7)
-        self.close_day.set(f'{master.date_now:%d}')
-        ctk.CTkButton(self, text='Закрыть ведомость', command=master.close_sheet, font=master.font).grid(row=2,
-                                                                                                         column=1,
-                                                                                                         sticky='nesw',
-                                                                                                         padx=5, pady=7)
-
-
-class TableFrame(ctk.CTkFrame):
-    def __init__(self, master: SheetWindow):
-        super().__init__(master)
-        self.font = master.font
-        self.master = master
-        self.absent_dicts = master.absent_dicts
-
-        self.gen_table(self.absent_dicts)
-
     def gen_table(self, absent_dicts):
         ttk.Style().configure('Treeview', rowheight=25)
-        columns = ('№', 'name') + tuple(str(i) for i in self.master.work_days) + ('н', 'б')
+        columns = ('№', 'name') + tuple(str(i) for i in self.work_days) + ('н', 'б')
         self.table = ttk.Treeview(self, columns=columns, show='headings')
         for i in columns:
             self.table.heading(i, text=i)
@@ -109,11 +110,21 @@ class TableFrame(ctk.CTkFrame):
         for absent_dict in absent_dicts:
             for kid in sorted(absent_dict.keys()):
                 title = (str(num), kid)
-                absents = tuple(absent_dict[kid].get(i, '') for i in self.master.work_days)
+                absents = tuple(absent_dict[kid].get(i, '') for i in self.work_days)
                 count = (absents.count('н'), absents.count('б'))
                 values = title + absents + count
-                self.table.insert("", tkinter.END, values=values, tags='white')
+                self.table.insert("", END, values=values, tags='white')
                 num += 1
+
+    def add_group(self):
+        groups = self.master.control_frame.label.cget('text').split()[1:-1]
+        ext_group = self.master.control_frame.ext_group.get().split()[1]
+        groups.append(ext_group)
+        ext_absent_dict = self.get_absent_dict(ext_group)
+        self.absent_dicts.append(ext_absent_dict)
+        self.master.control_frame.label.configure(text=f'Группа {",".join(groups)} {self.month_name}')
+        self.table.destroy()
+        self.gen_table(self.absent_dicts)
 
 
 class CloseSheet:
@@ -151,7 +162,7 @@ class CloseSheet:
         row_num = 16
         for absent_dict in self.absent_dicts:
             for kid in sorted(absent_dict.keys()):
-                row_data = [kid] + [absent_dict[kid][i] for i in sorted(absent_dict[kid].keys(), key=int)]
+                row_data = [kid] + [absent_dict[kid].get(i, '') for i in self.work_days]
                 row_data += [row_data.count('н'), row_data.count('б')]
                 for indx, column in enumerate(cols):
                     ws.cell(row=row_num, column=column).value = row_data[indx]

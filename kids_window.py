@@ -1,8 +1,9 @@
 import peewee
 import customtkinter as ctk
-from tkinter import messagebox, ttk, LEFT, END, Entry
+from tkinter import messagebox, ttk, LEFT, END, Entry, Event
 from database import Student
-from utils import Mixin
+from utils import *
+
 
 class KidsWindow(Mixin, ctk.CTkToplevel):
     def __init__(self, parent, group="1"):
@@ -23,10 +24,11 @@ class KidsWindow(Mixin, ctk.CTkToplevel):
         # Привязка событий
         self.bind('<<TreeviewSelect>>', self.table_frame.paste)
         self.bind('<space>', self.table_frame.change_active)
-        self.bind('<Right>', self.control_frame.choose_button)
-        self.bind('<Left>', self.control_frame.choose_button)
-        self.bind('<Down>', self.control_frame.choose_button)
-        self.bind('<Return>', self.control_frame.choose_button)
+        self.bind('<Right>', self.control_frame.navigation)
+        self.bind('<Left>', self.control_frame.navigation)
+        self.bind('<Down>', self.control_frame.navigation)
+        self.bind('<Return>', self.control_frame.navigation)
+        self.bind('<Up>', self.control_frame.navigation)
 
     def refresh(self):
         self.table_frame.clean_table()
@@ -38,8 +40,6 @@ class ControlFrame(ctk.CTkFrame):
     def __init__(self, master: KidsWindow):
         super().__init__(master)
         self.master: KidsWindow = master
-        self.index = -1
-        self.focus_btn = None
         ctk.CTkLabel(self, text='Фамилия и имя', font=master.font).grid(row=0, columnspan=3)
         self.entry = ctk.CTkEntry(self, font=master.font, width=250)
         self.entry.grid(row=1, columnspan=3, pady=10)
@@ -49,31 +49,31 @@ class ControlFrame(ctk.CTkFrame):
         self.del_btn.grid(row=2, column=1, padx=3)
         self.cng_btn = ctk.CTkButton(self, text='Исправить', command=self.change_kid, width=10, font=master.font)
         self.cng_btn.grid(row=2, column=2, padx=3)
+        self.setup_focus()
 
-    # todo привести функцию ы порядок
-    def choose_button(self, event):
-        # print(event.keysym)
-        if event.keycode == 13 and self.focus_btn:
-            self.focus_btn.cget('command')()
-        # if type(self.master.focus_get()) == Entry:
-        #     return
-        btns = [self.add_btn, self.del_btn, self.cng_btn]
-        [i.configure(fg_color='#1f538d') for i in btns]
-        if event.keycode == 40:
-            btns[0].focus()
-        if event.keycode == 39:
-            self.index += 1
-            if self.index == 3:
-                self.index = 0
-            self.focus_btn = btns[self.index]
-        if event.keycode == 37:
-            self.index -= 1
-            if self.index < 0:
-                self.index = 2
-            self.focus_btn = btns[self.index]
-        if self.focus_btn:
-            self.focus_btn.configure(fg_color='#08359D')
+    def setup_focus(self):
+        elements = [self.add_btn, self.del_btn, self.cng_btn]
+        self.custom_focus = CustomFocus(elements)
 
+    def navigation(self, event: Event):
+        if type(self.focus_get()) == KidsWindow:
+            self.custom_focus.set()
+            return
+        if type(self.focus_get()) == Entry and event.keysym != 'Down':
+            return
+        if type(self.focus_get()) == ttk.Treeview and event.keysym in ['Down', 'Up']:
+            return
+        if event.keysym == 'Up':
+            self.entry.focus()
+            [i.configure(fg_color='#1f538d') for i in self.custom_focus.btns]
+            return
+        if event.keysym == 'Left':
+            self.custom_focus.prev()
+        if event.keysym == 'Right':
+            self.custom_focus.next()
+        if event.keysym == 'Return':
+            self.custom_focus.focus_element.cget('command')()
+        self.custom_focus.set()
 
     def add_kid(self):
         name = self.entry.get()

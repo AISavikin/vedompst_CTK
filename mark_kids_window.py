@@ -9,16 +9,14 @@ from PIL import ImageGrab
 
 
 class MarkKidsWindow(Mixin, ctk.CTkToplevel):
-    def __init__(self, parent: ctk.CTk, group: str, month):
+    def __init__(self, parent, group: str, month):
 
         super().__init__(parent)
         self.group = group
         self.month = month
         self.month_num = self.get_month_num(month)
         self.year = self.get_year(self.month_num)
-        settings = self.get_settings()
-        font_size = settings['FONT_SIZE']
-        self.font = ctk.CTkFont(family='Times New Roman', size=font_size)
+        self.font = parent.font
         self.kids = [student for student in Student.select().where(Student.group == self.group).order_by(Student.name)]
 
         # Настройка окна
