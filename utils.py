@@ -1,11 +1,11 @@
 from typing import Union
 from datetime import datetime
 import os
-import requests
 import yaml
-from calendar import Calendar
+from calendar import Calendar, day_abbr
 from database import Student, Attendance
 from customtkinter.windows import widgets
+import customtkinter as ctk
 
 
 class Mixin:
@@ -40,7 +40,7 @@ class Mixin:
         x, y = map(int, window.geometry().split('+')[1:])
         return w, h, x, y
 
-    def set_geometry(self, w):
+    def set_geometry(self: ctk.CTk, w):
         w_screen = self.winfo_screenwidth()
         self.geometry(f'+{w_screen // 2 - w // 2}+30')
 
@@ -56,15 +56,10 @@ class Mixin:
         year = self.get_year(month_num)
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if
                 day[0] != 0 and day[1] in self.get_settings()['WORK_DAYS']]
+
     @staticmethod
     def get_weekend(year, month_num: int):
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
-
-    def get_weekend_net(self, month_num: int):
-        year = self.get_year(month_num)
-        url = f'https://isdayoff.ru/api/getdata?year={year}&month={month_num:02}&delimeter=.'
-        r = requests.get(url).text.split('.')
-        return [day for day, i in enumerate(r, 1) if i == '1']
 
     @staticmethod
     def get_absents_from_db(kids: list[Student], day: Union[int, str], month_num: Union[int, str],
@@ -76,6 +71,74 @@ class Mixin:
                 tmp = i.absent
             absents.append(tmp)
         return absents
+
+
+class CalendarVed(Mixin, ctk.CTkToplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.weekends = self.get_settings()['WEEKENDS']
+        self.title('Календарь')
+        self.set_geometry(400)
+        month_index = parent.MONTH_NUMS.index(parent.date.month)
+        self.month_name = parent.MONTH_NAMES[month_index]
+
+        self.day_frame = DayFrame(self, self.get_year(parent.date.month), self.date.month)
+        self.control_frame = ControlFrame(self)
+        self.control_frame.grid(row=0, sticky='n')
+        self.day_frame.grid(row=1)
+
+class ControlFrame(ctk.CTkFrame):
+
+    def __init__(self, master: CalendarVed):
+        super().__init__(master)
+
+        ctk.CTkButton(self, text='<', command=self.prev_month, width=30).grid(row=0, column=0, padx=3)
+        self.label = ctk.CTkLabel(self, text=f'{master.date:%B}', width=100)
+        self.label.grid(row=0, column=1, padx=50)
+        ctk.CTkButton(self, text='>', command=self.next_month, width=30).grid(row=0, column=2, padx=3)
+        self.month_names = master.MONTH_NAMES
+
+    def next_month(self):
+        pass
+
+    def prev_month(self):
+        pass
+
+
+class DayFrame(ctk.CTkFrame):
+    def __init__(self, master: CalendarVed, year, month):
+        super().__init__(master)
+        self.month_num = month
+        self.year = year
+        self.weekends = master.weekends
+        self.refresh()
+
+    def refresh(self):
+        self.main_frame = ctk.CTkFrame(self)
+        [ctk.CTkLabel(self.main_frame, text=name).grid(row=0, column=col, padx=7) for col, name in enumerate(day_abbr)]
+        self.gen_label(self.year, self.month_num)
+        self.colorize_label(self.month_num)
+        self.main_frame.pack()
+
+
+    def gen_label(self, year, month):
+        self.labels = []
+        days = [i for i in Calendar().itermonthdays(year, month)]
+        row = len(days) // 7
+        day = 0
+        for i in range(row):
+            for j in range(7):
+                if days[day] == 0:
+                    day += 1
+                    continue
+                label = ctk.CTkLabel(self.main_frame, text=str(days[day]), width=40)
+                label.grid(row=i + 1, column=j, padx=7)
+                self.labels.append(label)
+                day += 1
+
+    def colorize_label(self, month):
+        for day in self.weekends[month]:
+            self.labels[day - 1].configure(text_color='red')
 
 
 class Node:

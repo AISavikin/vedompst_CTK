@@ -7,7 +7,8 @@ from mark_kids_window import MarkKidsWindow
 from sheet_window import SheetWindow
 from setting_window import SettingsWindow
 from PIL import Image
-
+import locale
+locale.setlocale(locale.LC_TIME, 'RU')
 
 class MainWindow(Mixin, ctk.CTk):
 
@@ -70,6 +71,10 @@ class MainWindow(Mixin, ctk.CTk):
         window = SheetWindow(self, group, month)
         self.open_toplevel(window)
 
+    def calendar_window(self):
+        window = CalendarVed(self)
+
+
     def settings_window(self):
         window = SettingsWindow(self)
         self.open_toplevel(window)
@@ -102,13 +107,15 @@ class MainFrame(ctk.CTkFrame):
         # Переменные
         self.master: MainWindow = master
         self.font = master.font
-        img = ctk.CTkImage(dark_image=Image.open('settings.png'))
+        img_settings = ctk.CTkImage(dark_image=Image.open('settings.png'))
+        img_calendar = ctk.CTkImage(dark_image=Image.open('calendar.png'))
         # фреймы
         combo_frame = ctk.CTkFrame(self)
         label_frame = ctk.CTkFrame(self)
         # Элементы
-        label = ctk.CTkLabel(label_frame, text='    Ведомости детский сад')
-        btn_settings = ctk.CTkButton(label_frame, image=img, text='', width=30, command=master.settings_window)
+        label = ctk.CTkLabel(label_frame, text='Ведомости детский сад')
+        btn_settings = ctk.CTkButton(label_frame, image=img_settings, text='', width=30, command=master.settings_window)
+        btn_calendar = ctk.CTkButton(label_frame, image=img_calendar, text='', width=30, command=master.calendar_window)
         btn_add_group = ctk.CTkButton(self, text='Добавить группу', command=master.add_group)
         btn_kids = ctk.CTkButton(self, text='Ученики', command=master.kids_window)
         btn_mark = ctk.CTkButton(self, text='Отметить', command=master.mark_kids_window)
@@ -116,7 +123,8 @@ class MainFrame(ctk.CTkFrame):
         self.cmb_month = ctk.CTkComboBox(combo_frame, values=master.MONTH_NAMES)
         self.cmb_group = ctk.CTkComboBox(combo_frame, values=["Пусто"])
         # Упаковка label_frame
-        label.pack(side=LEFT, padx=3)
+        label.pack(side=LEFT, padx=5)
+        btn_calendar.pack(side=RIGHT, padx=5)
         btn_settings.pack(side=RIGHT, padx=5)
         # Упаковка combo_frame
         self.cmb_group.pack(side=LEFT, padx=3)
@@ -150,6 +158,7 @@ class MainFrame(ctk.CTkFrame):
 
     def get_month(self):
         return self.cmb_month.get()
+
 
 
 if __name__ == '__main__':
