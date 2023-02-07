@@ -28,7 +28,7 @@ class SheetWindow(Mixin, ctk.CTkToplevel):
         path_sheet = self.get_settings()['PATH_SHEET']
         path_screenshot = self.get_settings()['PATH_SCREENSHOT']
         group = self.control_frame.label.cget('text')
-        weekend = self.get_weekend(month_num)
+        weekend = self.get_settings()['WEEKENDS'][month_num]
         close_day = self.control_frame.close_day.get()
         month_name = self.month_name
         year = self.get_year(month_num)

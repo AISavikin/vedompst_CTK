@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import messagebox, filedialog, LEFT, RIGHT, END
+from tkinter import filedialog, LEFT, RIGHT, END, messagebox
 from utils import *
 import yaml
 
@@ -24,8 +24,10 @@ class SettingsWindow(Mixin, ctk.CTkToplevel):
         self.year_frame.grid(row=3, column=1, sticky='n', padx=10)
         self.font_frame = FontFrame(self)
         self.font_frame.grid(row=3, column=2, sticky='n', padx=10)
-        ctk.CTkButton(self, text='Сохранить', command=self.save,
+        ctk.CTkButton(self, text='Обновить выходные', command=self.update_weekends,
                       font=self.font, height=40).grid(pady=5, padx=5, sticky='nesw', row=4, columnspan=3)
+        ctk.CTkButton(self, text='Сохранить', command=self.save,
+                      font=self.font, height=40).grid(pady=5, padx=5, sticky='nesw', row=5, columnspan=3)
 
     def save(self):
         settings = {'DB': self.data_base_frame.get_data_base_path(),
@@ -33,7 +35,8 @@ class SettingsWindow(Mixin, ctk.CTkToplevel):
                     'PATH_SHEET': self.folder_frame.get_folder(),
                     'WORK_DAYS': self.work_days_frame.get_nums_work_days(),
                     'YEARS': self.year_frame.get_year(),
-                    'FONT_SIZE': self.font_frame.get_font_size()}
+                    'FONT_SIZE': self.font_frame.get_font_size(),
+                    'WEEKENDS': self.settings['WEEKENDS']}
 
         with open('settings.yaml', 'w', encoding='utf-8') as f:
             yaml.dump(settings, f, allow_unicode=True)
@@ -41,6 +44,21 @@ class SettingsWindow(Mixin, ctk.CTkToplevel):
             messagebox.showinfo(title='Настройки', message='Настройки вступят в силу после перезагрузки.')
         self.destroy()
 
+    def update_weekends(self):
+        for month_num in self.MONTH_NUMS:
+            year = self.get_year(month_num)
+            url = f'https://isdayoff.ru/api/getdata?year={year}&month={month_num:02}&delimeter=.'
+            try:
+                response = requests.get(url)
+            except ConnectionError:
+                messagebox.showerror(title='Ошибка соединения', message='Не удалось получить данные с сервера')
+                return
+            if response.status_code != 200:
+                messagebox.showerror(title='Ошибка сервера', message=f'Код ошибки {response.status_code}'
+                                                                     f'\nНе удалось получить данные с сервера')
+                return
+            self.settings['WEEKENDS'][month_num] = [day for day, i in enumerate(response.text.split('.'), 1) if i == '1']
+        messagebox.showinfo(title='Успешно!', message='Данные о выходных успешно обновлены!')
 
 class DataBaseFrame(ctk.CTkFrame):
     def __init__(self, parent):
@@ -55,6 +73,8 @@ class DataBaseFrame(ctk.CTkFrame):
     def btn_command(self):
         self.entry.configure(state='normal')
         path = filedialog.askopenfilename()
+        if not path:
+            return
         self.entry.delete(0, END)
         self.entry.insert(0, path)
         self.entry.configure(state='readonly')
@@ -84,6 +104,8 @@ class FolderFrame(ctk.CTkFrame):
     def btn_command(self):
         self.entry.configure(state='normal')
         path = filedialog.askdirectory()
+        if not path:
+            return
         self.entry.delete(0, END)
         self.entry.insert(0, path)
         self.entry.configure(state='readonly')

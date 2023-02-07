@@ -2,12 +2,10 @@ from typing import Union
 from datetime import datetime
 import os
 import requests
-from requests.exceptions import ConnectionError
 import yaml
 from calendar import Calendar
 from database import Student, Attendance
 from customtkinter.windows import widgets
-from tkinter import messagebox
 
 
 class Mixin:
@@ -23,7 +21,12 @@ class Mixin:
                         'PATH_SHEET': 'Ведомости/',
                         'WORK_DAYS': [2, 4],
                         'YEARS': [2022, 2023],
-                        'FONT_SIZE': 20}
+                        'FONT_SIZE': 20,
+                        'WEEKENDS': {}
+                        }
+            for num in Mixin.MONTH_NUMS:
+                year = settings['YEARS'][0] if num in (9, 10, 11, 12) else settings['YEARS'][1]
+                settings['WEEKENDS'][num] = Mixin.get_weekend(year, num)
 
             with open('settings.yaml', 'w', encoding='utf-8') as f:
                 yaml.dump(settings, f, allow_unicode=True)
@@ -53,21 +56,9 @@ class Mixin:
         year = self.get_year(month_num)
         return [day[0] for day in Calendar().itermonthdays2(year, month_num) if
                 day[0] != 0 and day[1] in self.get_settings()['WORK_DAYS']]
-
-    def get_weekend(self, month_num: int):
-        year = self.get_year(month_num)
-        url = f'https://isdayoff.ru/api/getdata?year={year}&month={month_num:02}&delimeter=.'
-        try:
-            response = requests.get(url)
-        except ConnectionError:
-            messagebox.showerror(title='Ошибка соединения', message='Праздничные дни не будут учтены!')
-            return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
-        if response.status_code != 200:
-            messagebox.showerror(title='Ошибка сервера', message=f'Код ошибки {response.status_code}'
-                                                                 f'\nПраздничные дни не будут учтены!')
-            return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
-
-        return [day for day, i in enumerate(response.text.split('.'), 1) if i == '1']
+    @staticmethod
+    def get_weekend(year, month_num: int):
+        return [day[0] for day in Calendar().itermonthdays2(year, month_num) if day[0] != 0 and day[1] in (5, 6)]
 
     def get_weekend_net(self, month_num: int):
         year = self.get_year(month_num)
