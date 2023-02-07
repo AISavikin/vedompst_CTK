@@ -9,6 +9,7 @@ from database import Student, Attendance
 from customtkinter.windows import widgets
 from tkinter import messagebox
 
+
 class Mixin:
     MONTH_NAMES = ['Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май']
     MONTH_NUMS = [9, 10, 11, 12, 1, 2, 3, 4, 5]
@@ -74,7 +75,6 @@ class Mixin:
         r = requests.get(url).text.split('.')
         return [day for day, i in enumerate(r, 1) if i == '1']
 
-
     @staticmethod
     def get_absents_from_db(kids: list[Student], day: Union[int, str], month_num: Union[int, str],
                             year: Union[int, str]):
@@ -89,7 +89,6 @@ class Mixin:
 
 class Node:
     def __init__(self, element):
-        self.focus = False
         self.prev_node = None
         self.next_node = None
         self.element = element
@@ -99,46 +98,52 @@ class Node:
 class CustomFocus:
     def __init__(self, elements):
         self.start_node = None
-        self.elements = elements
-        self.setup()
+        self.focus_node = None
+        self.btns = []
+        self.setup(elements)
+        self.start_focus()
 
     def set(self):
         [i.configure(fg_color='#1f538d') for i in self.btns]
-        self.focus_element.focus()
-        if type(self.focus_element) == widgets.CTkButton:
-            self.focus_element.configure(fg_color='#08359D')
+        self.focus_node.element.focus()
+        if type(self.focus_node.element) == widgets.CTkButton:
+            self.focus_node.element.configure(fg_color='#08359D')
 
-    def setup(self):
-        self.btns = []
-        for i in self.elements:
+    def setup(self, elements: list[widgets]):
+        for i in elements:
             self.add_node(i)
             if type(i) == widgets.CTkButton:
                 self.btns.append(i)
-        self.focus_element = self.start_node.element
 
-    def find_focus(self):
+    def start_focus(self):
         node = self.start_node
-        while not node.focus:
+        while node.state == 'disabled':
             node = node.next_node
-        return node
+        self.focus_node = node
 
     def next(self):
-        node = self.find_focus()
+        node = cur = self.focus_node
         if node.next_node:
-            node.focus = False
             while node.next_node.state == 'disabled':
                 node = node.next_node
-            node.next_node.focus = True
-            self.focus_element = self.find_focus().element
+                if node.next_node is None:
+                    break
+            node = node.next_node
+            self.focus_node = node
+        if node is None:
+            self.focus_node = cur
 
     def prev(self):
-        node = self.find_focus()
+        node = cur = self.focus_node
         if node.prev_node:
-            node.focus = False
             while node.prev_node.state == 'disabled':
                 node = node.prev_node
-            node.prev_node.focus = True
-            self.focus_element = self.find_focus().element
+                if node.prev_node is None:
+                    break
+            node = node.prev_node
+            self.focus_node = node
+        if node is None:
+            self.focus_node = cur
 
     def add_node(self, element):
         new_node = Node(element)

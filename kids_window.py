@@ -1,6 +1,6 @@
 import peewee
 import customtkinter as ctk
-from tkinter import messagebox, ttk, LEFT, END, Entry, Event
+from tkinter import ttk, LEFT, END, Entry, Event
 from utils import *
 
 
@@ -71,7 +71,7 @@ class ControlFrame(ctk.CTkFrame):
         if event.keysym == 'Right':
             self.custom_focus.next()
         if event.keysym == 'Return':
-            self.custom_focus.focus_element.cget('command')()
+            self.custom_focus.focus_node.element.cget('command')()
         self.custom_focus.set()
 
     def add_kid(self):

@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import messagebox, LEFT, END
+from tkinter import LEFT, END
 from utils import *
 import os
 from PIL import ImageGrab
@@ -33,7 +33,7 @@ class MarkKidsWindow(Mixin, ctk.CTkToplevel):
         self.bind('<Right>', self.kids_frame.navigation)
         self.bind('<Return>', self.mark_kids)
 
-    def mark_kids(self, *event):
+    def mark_kids(self, event):
         absents = self.kids_frame.get_absents()
         if not all(absents):
             confirm = messagebox.askyesno(title='Вы уверены?', message='Вы отметили не всех! Сохранить?')
@@ -139,9 +139,9 @@ class KidsFrame(ctk.CTkFrame):
         if event.keysym == 'Up':
             custom_focus.prev()
         if event.keysym == 'Left':
-            custom_focus.focus_element.delete(0, END)
-            custom_focus.focus_element.insert(0, 'н')
+            custom_focus.focus_node.element.delete(0, END)
+            custom_focus.focus_node.element.insert(0, 'н')
         if event.keysym == 'Right':
-            custom_focus.focus_element.delete(0, END)
-            custom_focus.focus_element.insert(0, 'б')
+            custom_focus.focus_node.element.delete(0, END)
+            custom_focus.focus_node.element.insert(0, 'б')
         custom_focus.set()
