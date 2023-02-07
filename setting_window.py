@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import requests
 from tkinter import filedialog, LEFT, RIGHT, END, messagebox
 from utils import *
 import yaml
