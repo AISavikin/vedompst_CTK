@@ -1,7 +1,8 @@
 import peewee
 import customtkinter as ctk
-from tkinter import ttk, LEFT, END, Entry, Event, messagebox
+from tkinter import ttk, LEFT, END, Entry, Event, messagebox, Listbox, Variable
 from utils import *
+from PIL import Image
 
 
 class KidsWindow(Mixin, ctk.CTkToplevel):
@@ -39,19 +40,26 @@ class ControlFrame(ctk.CTkFrame):
     def __init__(self, master: KidsWindow):
         super().__init__(master)
         self.master: KidsWindow = master
-        ctk.CTkLabel(self, text='Фамилия и имя', font=master.font).grid(row=0, columnspan=3)
+        img_add = ctk.CTkImage(dark_image=Image.open('icons/add.png'), size=(30, 30))
+        img_del = ctk.CTkImage(dark_image=Image.open('icons/del.png'), size=(30, 30))
+        img_corr = ctk.CTkImage(dark_image=Image.open('icons/correct.png'), size=(30, 30))
+        img_change = ctk.CTkImage(dark_image=Image.open('icons/change.png'), size=(30, 30))
+        ctk.CTkLabel(self, text='Фамилия и имя', font=master.font).grid(row=0, columnspan=4)
         self.entry = ctk.CTkEntry(self, font=master.font, width=250)
-        self.entry.grid(row=1, columnspan=3, pady=10)
-        self.add_btn = ctk.CTkButton(self, text='Добавить', command=self.add_kid, width=10, font=master.font)
+        self.entry.grid(row=1, columnspan=4, pady=10)
+        self.add_btn = ctk.CTkButton(self, text=' ', image=img_add, command=self.add_kid, width=50, font=master.font)
         self.add_btn.grid(row=2, column=0, padx=3)
-        self.del_btn = ctk.CTkButton(self, text='Удалить', command=self.del_kid, width=10, font=master.font)
+        self.del_btn = ctk.CTkButton(self, text=' ', image=img_del, command=self.del_kid, width=10, font=master.font)
         self.del_btn.grid(row=2, column=1, padx=3)
-        self.cng_btn = ctk.CTkButton(self, text='Исправить', command=self.change_kid, width=10, font=master.font)
-        self.cng_btn.grid(row=2, column=2, padx=3)
+        self.correct_btn = ctk.CTkButton(self, text=' ', image=img_corr, command=self.correct_kid, width=10, font=master.font)
+        self.correct_btn.grid(row=2, column=2, padx=3)
+        self.change_btn = ctk.CTkButton(self, text=' ', image=img_change, command=self.change_group, width=10,
+                                        font=master.font)
+        self.change_btn.grid(row=2, column=3, padx=3)
         self.setup_focus()
 
     def setup_focus(self):
-        elements = [self.add_btn, self.del_btn, self.cng_btn]
+        elements = [self.add_btn, self.del_btn, self.correct_btn, self.change_btn]
         self.custom_focus = CustomFocus(elements)
 
     def navigation(self, event: Event):
@@ -76,6 +84,8 @@ class ControlFrame(ctk.CTkFrame):
 
     def add_kid(self):
         name = self.entry.get()
+        if not name:
+            self.err_name_empty()
         name = ' '.join(map(str.capitalize, name.split()))
         if name:
             try:
@@ -86,29 +96,41 @@ class ControlFrame(ctk.CTkFrame):
 
     def del_kid(self):
         name = self.master.table_frame.get_name_from_table()
-        try:
-            kids_id = Student.get(name=name)
-        except peewee.DoesNotExist:
-            messagebox.showerror(title='Ошибка', message='Ученика с таким именем не существует')
-            return
         if not name:
-            messagebox.showerror(title='Ошибка', message='Введите имя!')
+            self.err_name_empty()
             return
+        kids_id = Student.get(name=name)
         if not messagebox.askyesno(title='Вы уверены?', message='Данное действие не обратимо\nВсё равно выполнить?'):
             return
         Student.delete().where(Student.id == kids_id).execute()
         self.master.refresh()
 
-    def change_kid(self):
+    def correct_kid(self):
         name = self.master.table_frame.get_name_from_table()
         if not name:
-            messagebox.showerror(title='Ошибка', message='Введите имя!')
+            self.err_name_empty()
             return
         kids_id = Student.get(name=name)
         new_name = self.entry.get()
         Student.update({Student.name: new_name}).where(Student.id == kids_id).execute()
         self.master.refresh()
 
+    def change_group(self):
+        name = self.master.table_frame.get_name_from_table()
+        if not name:
+            self.err_name_empty()
+            return
+        kids_id = Student.get(name=name)
+        window = ChooseGroup(self.master)
+        window.wait_window()
+        new_group = window.group
+        if new_group is None:
+            return
+        Student.update({Student.group: new_group}).where(Student.id == kids_id).execute()
+        self.master.refresh()
+
+    def err_name_empty(self):
+        return messagebox.showerror(title='Ошибка', message='Введите имя!')
 
 class TableFrame(ctk.CTkFrame):
     def __init__(self, master: KidsWindow):
@@ -167,3 +189,29 @@ class TableFrame(ctk.CTkFrame):
         active = Student.get(Student.name == name).active
         Student.update(active=not active).where(Student.name == name).execute()
         self.master.refresh()
+
+class ChooseGroup(ctk.CTkToplevel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        w, h, x, y = Mixin.get_window_size(parent)
+        self.geometry(f'150x300+{x + w // 4}+{y + h // 4}')
+        groups = [f'Группа {num}' for num in set(i.group for i in Student.select())]
+        self.listbox = Listbox(self)
+        self.groups = Variable(value=groups)
+        self.group = None
+        self.listbox.configure(
+            background="#000000",
+            font="{Times New Roman} 18 {}",
+            foreground="#ffffff",
+            listvariable=self.groups,
+            width=10,
+            selectbackground='#08359D',
+            activestyle="none")
+        self.listbox.pack(side="top")
+        self.listbox.bind("<Return>", self.callback)
+        self.after(150, lambda: self.listbox.focus())
+        self.listbox.select_set(0)
+
+    def callback(self, event=None):
+        self.group = self.groups.get()[self.listbox.curselection()[0]].split()[-1]
+        self.destroy()

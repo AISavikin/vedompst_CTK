@@ -94,7 +94,6 @@ class KidsFrame(ctk.CTkFrame):
         self.month_num = master.month_num
         self.year = master.year
         self.kids = master.kids
-        self.get_absents_from_db = master.get_absents_from_db
         self.entrys = []
         self.create_entry()
         self.btn = ctk.CTkButton(self, text='Отметить', command=master.mark_kids, font=self.font)
@@ -120,7 +119,7 @@ class KidsFrame(ctk.CTkFrame):
         self.custom_focus = CustomFocus(elements)
 
     def paste_absents(self, day):
-        absents = self.get_absents_from_db(self.kids, day, self.month_num, self.year)
+        absents = Mixin.get_absents_from_db(self.kids, day, self.month_num, self.year)
         for i, entry in enumerate(self.entrys):
             if absents[i]:
                 entry.configure(state='normal')

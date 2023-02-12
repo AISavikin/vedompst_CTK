@@ -107,8 +107,8 @@ class MainFrame(ctk.CTkFrame):
         # Переменные
         self.master: MainWindow = master
         self.font = master.font
-        img_settings = ctk.CTkImage(dark_image=Image.open('settings.png'))
-        img_calendar = ctk.CTkImage(dark_image=Image.open('calendar.png'))
+        img_settings = ctk.CTkImage(dark_image=Image.open('icons/settings.png'))
+        img_calendar = ctk.CTkImage(dark_image=Image.open('icons/calendar.png'))
         # фреймы
         combo_frame = ctk.CTkFrame(self)
         label_frame = ctk.CTkFrame(self)
