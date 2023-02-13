@@ -80,7 +80,6 @@ class CalendarVed(Mixin, ctk.CTkToplevel):
         self.title('Календарь')
         self.set_geometry(400)
         self.month_index = parent.MONTH_NUMS.index(parent.date.month)
-        self.month_name = parent.MONTH_NAMES[self.month_index]
         self.day_frames = [DayFrame(self, self.get_year(mon), mon) for mon in self.MONTH_NUMS]
         self.control_frame = ControlFrame(self)
         self.control_frame.grid(row=0, sticky='n')
