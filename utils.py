@@ -9,8 +9,8 @@ import customtkinter as ctk
 
 
 class Mixin:
-    MONTH_NAMES = ['Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май']
-    MONTH_NUMS = [9, 10, 11, 12, 1, 2, 3, 4, 5]
+    MONTH_NAMES = ['Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь']
+    MONTH_NUMS = [9, 10, 11, 12, 1, 2, 3, 4, 5, 6]
     date = datetime.now()
 
     @staticmethod
@@ -79,30 +79,37 @@ class CalendarVed(Mixin, ctk.CTkToplevel):
         self.weekends = self.get_settings()['WEEKENDS']
         self.title('Календарь')
         self.set_geometry(400)
-        month_index = parent.MONTH_NUMS.index(parent.date.month)
-        self.month_name = parent.MONTH_NAMES[month_index]
-
-        self.day_frame = DayFrame(self, self.get_year(parent.date.month), self.date.month)
+        self.month_index = parent.MONTH_NUMS.index(parent.date.month)
+        self.month_name = parent.MONTH_NAMES[self.month_index]
+        self.day_frames = [DayFrame(self, self.get_year(mon), mon) for mon in self.MONTH_NUMS]
         self.control_frame = ControlFrame(self)
         self.control_frame.grid(row=0, sticky='n')
-        self.day_frame.grid(row=1)
+        self.day_frames[self.month_index].grid(row=1)
+
 
 class ControlFrame(ctk.CTkFrame):
 
     def __init__(self, master: CalendarVed):
         super().__init__(master)
 
-        ctk.CTkButton(self, text='<', command=self.prev_month, width=30).grid(row=0, column=0, padx=3)
+        ctk.CTkButton(self, text='<', command=lambda: self.switch_month('<'), width=30).grid(row=0, column=0, padx=3)
         self.label = ctk.CTkLabel(self, text=f'{master.date:%B}', width=100)
         self.label.grid(row=0, column=1, padx=50)
-        ctk.CTkButton(self, text='>', command=self.next_month, width=30).grid(row=0, column=2, padx=3)
+        ctk.CTkButton(self, text='>', command=lambda: self.switch_month('>'), width=30).grid(row=0, column=2, padx=3)
         self.month_names = master.MONTH_NAMES
+        self.day_frames = master.day_frames
+        self.month_index = master.month_index
 
-    def next_month(self):
-        pass
-
-    def prev_month(self):
-        pass
+    def switch_month(self, direction: str):
+        self.day_frames[self.month_index].grid_forget()
+        if direction == '>':
+            if self.month_index < len(self.day_frames) - 1:
+                self.month_index += 1
+        else:
+            if self.month_index > 0:
+                self.month_index -= 1
+        self.label.configure(text=self.month_names[self.month_index])
+        self.day_frames[self.month_index].grid(row=1)
 
 
 class DayFrame(ctk.CTkFrame):
@@ -111,15 +118,11 @@ class DayFrame(ctk.CTkFrame):
         self.month_num = month
         self.year = year
         self.weekends = master.weekends
-        self.refresh()
-
-    def refresh(self):
         self.main_frame = ctk.CTkFrame(self)
         [ctk.CTkLabel(self.main_frame, text=name).grid(row=0, column=col, padx=7) for col, name in enumerate(day_abbr)]
         self.gen_label(self.year, self.month_num)
         self.colorize_label(self.month_num)
         self.main_frame.pack()
-
 
     def gen_label(self, year, month):
         self.labels = []

@@ -59,6 +59,7 @@ class SettingsWindow(Mixin, ctk.CTkToplevel):
                                                                      f'\nНе удалось получить данные с сервера')
                 return
             self.settings['WEEKENDS'][month_num] = [day for day, i in enumerate(response.text.split('.'), 1) if i == '1']
+        self.save()
         messagebox.showinfo(title='Успешно!', message='Данные о выходных успешно обновлены!')
 
 class DataBaseFrame(ctk.CTkFrame):
