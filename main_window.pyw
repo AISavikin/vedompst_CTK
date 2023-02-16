@@ -8,7 +8,9 @@ from sheet_window import SheetWindow
 from setting_window import SettingsWindow
 from PIL import Image
 import locale
+
 locale.setlocale(locale.LC_TIME, 'RU')
+
 
 class MainWindow(Mixin, ctk.CTk):
 
@@ -44,7 +46,6 @@ class MainWindow(Mixin, ctk.CTk):
             group = self.main_frame.get_group()
         window = KidsWindow(self, group)
         self.open_toplevel(window)
-        self.main_frame.refresh_groups()
 
     def add_group(self):
         group = AddGroup(self).open()
@@ -54,6 +55,7 @@ class MainWindow(Mixin, ctk.CTk):
             messagebox.showerror(message="Только цифры!")
             return
         self.kids_window(group)
+        self.main_frame.refresh_groups()
 
     def mark_kids_window(self):
         group = self.get_group()
@@ -73,7 +75,6 @@ class MainWindow(Mixin, ctk.CTk):
 
     def calendar_window(self):
         window = CalendarVed(self)
-
 
     def settings_window(self):
         window = SettingsWindow(self)
@@ -158,7 +159,6 @@ class MainFrame(ctk.CTkFrame):
 
     def get_month(self):
         return self.cmb_month.get()
-
 
 
 if __name__ == '__main__':

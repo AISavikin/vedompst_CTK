@@ -19,7 +19,7 @@ class KidsWindow(Mixin, ctk.CTkToplevel):
         self.control_frame = ControlFrame(self)
 
         self.control_frame.pack(side=LEFT, padx=20)
-        self.table_frame.pack(side=LEFT)
+        self.table_frame.pack(side=LEFT, padx=10, pady=10)
 
         # Привязка событий
         self.bind('<<TreeviewSelect>>', self.table_frame.paste)
@@ -131,6 +131,7 @@ class ControlFrame(ctk.CTkFrame):
 
     def err_name_empty(self):
         return messagebox.showerror(title='Ошибка', message='Введите имя!')
+
 
 class TableFrame(ctk.CTkFrame):
     def __init__(self, master: KidsWindow):
