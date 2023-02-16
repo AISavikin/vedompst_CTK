@@ -33,7 +33,7 @@ class KidsWindow(Mixin, ctk.CTkToplevel):
     def refresh(self):
         self.table_frame.clean_table()
         self.control_frame.entry.delete(0, END)
-        self.table_frame.gen_table()
+        self.table_frame.gen_table(self.table_frame.get_group_for_cmb())
 
 
 class ControlFrame(ctk.CTkFrame):
@@ -51,7 +51,8 @@ class ControlFrame(ctk.CTkFrame):
         self.add_btn.grid(row=2, column=0, padx=3)
         self.del_btn = ctk.CTkButton(self, text=' ', image=img_del, command=self.del_kid, width=10, font=master.font)
         self.del_btn.grid(row=2, column=1, padx=3)
-        self.correct_btn = ctk.CTkButton(self, text=' ', image=img_corr, command=self.correct_kid, width=10, font=master.font)
+        self.correct_btn = ctk.CTkButton(self, text=' ', image=img_corr, command=self.correct_kid, width=10,
+                                         font=master.font)
         self.correct_btn.grid(row=2, column=2, padx=3)
         self.change_btn = ctk.CTkButton(self, text=' ', image=img_change, command=self.change_group, width=10,
                                         font=master.font)
@@ -129,18 +130,23 @@ class ControlFrame(ctk.CTkFrame):
         Student.update({Student.group: new_group}).where(Student.id == kids_id).execute()
         self.master.refresh()
 
-    def err_name_empty(self):
+    @staticmethod
+    def err_name_empty():
         return messagebox.showerror(title='Ошибка', message='Введите имя!')
 
 
 class TableFrame(ctk.CTkFrame):
     def __init__(self, master: KidsWindow):
         super().__init__(master)
-        self.group = master.group
+        # self.group = master.group
         self.master: KidsWindow = master
         s = ttk.Style()
         s.configure('Treeview', rowheight=25)
-        ctk.CTkLabel(self, text=f"Группа {master.group}", font=master.font).pack(pady=10)
+        self.cmb_group = ctk.CTkComboBox(self, command=self.change_group,
+                                         values=[f'Группа {num}' for num in set(i.group for i in Student.select())],
+                                         font=master.font)
+        self.cmb_group.pack(pady=10)
+        self.cmb_group.set(f"Группа {master.group}")
         columns = ('№', 'name', 'added')
         self.table = ttk.Treeview(master=self, columns=columns, show='headings', height=15)
         self.table.tag_configure('normal', foreground='white', background='#1a1a1a', font=master.font)
@@ -152,10 +158,18 @@ class TableFrame(ctk.CTkFrame):
         self.table.column('name', width=250, anchor='n')
         self.table.column('added', width=150, anchor='n')
         self.table.pack()
-        self.gen_table()
+        self.gen_table(master.group)
 
-    def gen_table(self):
-        kids = [student for student in Student.select().where(Student.group == self.group).order_by(Student.name)]
+    def change_group(self, event=None):
+        self.clean_table()
+        group = self.get_group_for_cmb()
+        self.gen_table(group)
+
+    def get_group_for_cmb(self):
+        return self.cmb_group.get().split()[-1]
+
+    def gen_table(self, group):
+        kids = [student for student in Student.select().where(Student.group == group).order_by(Student.name)]
         data = [(cnt, i.name, f'{i.added:%d.%m.%y}', i.active) for cnt, i in enumerate(kids, 1)]
         for kid in data:
             if kid[-1]:
@@ -190,6 +204,7 @@ class TableFrame(ctk.CTkFrame):
         active = Student.get(Student.name == name).active
         Student.update(active=not active).where(Student.name == name).execute()
         self.master.refresh()
+
 
 class ChooseGroup(ctk.CTkToplevel):
     def __init__(self, parent=None):
