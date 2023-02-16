@@ -54,8 +54,11 @@ class Mixin:
     def get_work_days(self, month: str):
         month_num = self.get_month_num(month)
         year = self.get_year(month_num)
-        return [day[0] for day in Calendar().itermonthdays2(year, month_num) if
-                day[0] != 0 and day[1] in self.get_settings()['WORK_DAYS']]
+        work_days_without_holiday = [day[0] for day in Calendar().itermonthdays2(year, month_num) if
+                                     day[0] != 0 and day[1] in self.get_settings()['WORK_DAYS']]
+        holidays = self.get_settings()['WEEKENDS'][month_num]
+        work_days = set(work_days_without_holiday) - set(holidays)
+        return list(work_days)
 
     @staticmethod
     def get_weekend(year, month_num: int):
