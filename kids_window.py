@@ -138,7 +138,6 @@ class ControlFrame(ctk.CTkFrame):
 class TableFrame(ctk.CTkFrame):
     def __init__(self, master: KidsWindow):
         super().__init__(master)
-        # self.group = master.group
         self.master: KidsWindow = master
         s = ttk.Style()
         s.configure('Treeview', rowheight=25)

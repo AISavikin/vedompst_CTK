@@ -45,14 +45,16 @@ class ControlFrame(ctk.CTkFrame):
         self.label = ctk.CTkLabel(self, text=f'Группа {master.group} {master.month_name}', font=master.font)
         self.label.grid(row=0, columnspan=2, padx=5, pady=7)
         self.ext_group = ctk.CTkComboBox(self, values=group_nums, font=master.font)
-        self.ext_group.grid(row=1, column=0, padx=5, pady=7, sticky='nesw')
+        self.ext_group.grid(row=1, column=0, padx=5, pady=7, sticky='nesw', columnspan=2)
         ctk.CTkButton(self, text='Добавить', command=master.table_frame.add_group,
-                      font=master.font).grid(row=1, column=1, padx=5, pady=7, sticky='nesw')
+                      font=master.font).grid(row=1, column=2, padx=5, pady=7, sticky='nesw')
         self.close_day = ctk.CTkComboBox(self, values=[str(i) for i in range(1, 31)], font=master.font, width=80)
         self.close_day.grid(row=2, column=0, padx=5, pady=7)
         self.close_day.set(f'{master.date:%d}')
         ctk.CTkButton(self, text='Закрыть ведомость', command=master.close_sheet,
-                      font=master.font).grid(row=2, column=1, sticky='nesw', padx=5, pady=7)
+                      font=master.font).grid(row=2, column=2, sticky='nesw', padx=5, pady=7)
+        ctk.CTkButton(self, text='"н"', command=master.table_frame.fill_n, width=50,
+                      font=master.font).grid(row=2, column=1, sticky='nesw', padx=3, pady=7)
 
 
 class TableFrame(ctk.CTkFrame):
@@ -69,6 +71,15 @@ class TableFrame(ctk.CTkFrame):
         self.absent_dicts = [self.get_absent_dict(self.group)]
         self.gen_table(self.absent_dicts)
 
+    def fill_n(self):
+        for dic in self.absent_dicts:
+            for kid in dic:
+                for day in dic[kid]:
+                    if dic[kid][day] == '':
+                        dic[kid][day] = 'н'
+        self.table.destroy()
+        self.gen_table(self.absent_dicts)
+
     def get_absent_dict(self, group: Union[str, int]) -> dict:
         kids = Student.select().filter(group=group).order_by(Student.name)
         work_days_from_db = [i.day for i in Attendance.select().filter(month=self.month_num, student_id=kids[0],
@@ -81,7 +92,6 @@ class TableFrame(ctk.CTkFrame):
                    Attendance.select().filter(month=self.month_num, student_id=kid.id, year=self.year)]
             for day in row:
                 absent_dict[kid.name][day[0]] = day[1]
-
         return absent_dict
 
     def gen_table(self, absent_dicts):
