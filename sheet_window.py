@@ -1,3 +1,5 @@
+from openpyxl.styles import Alignment
+
 import customtkinter as ctk
 from tkinter import messagebox, ttk, END
 from openpyxl import load_workbook, styles
@@ -164,6 +166,13 @@ class CloseSheet:
         cols = [2] + [int(i) + 4 for i in self.work_days] + [36, 38]
         row_num = 16
         for absent_dict in self.absent_dicts:
+            student = Student.get(name=list(absent_dict.keys())[0])
+            group = student.group
+            ws.cell(row=row_num, column=2).value = f'Группа {group}'
+            ws.merge_cells(f'B{row_num}:AI{row_num}')
+            cell = ws.cell(row=row_num, column=2)
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            row_num += 1
             for kid in sorted(absent_dict.keys()):
                 row_data = [kid] + [absent_dict[kid].get(i, '') for i in self.work_days]
                 row_data += [row_data.count('н'), row_data.count('б')]
@@ -177,7 +186,7 @@ class CloseSheet:
         self.write_data()
         work_book = load_workbook(self.filename)
         work_sheet = work_book['Посещаемость']
-        work_days_num = work_sheet['aj16'].value + work_sheet['al16'].value
+        work_days_num = work_sheet['aj17'].value + work_sheet['al17'].value
         self.write_service_information(work_sheet, work_days_num)
         self.colorize_weekend(work_sheet)
         work_book.save(self.filename)
