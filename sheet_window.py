@@ -194,14 +194,14 @@ class CloseSheet:
     def write_service_information(self, ws, work_days_num):
 
         ws['N3'].value = self.month_name
-        ws['AA43'].value = self.month_name
+        ws['AA50'].value = self.month_name
         ws['C5'].value = ' '.join(self.group.split()[:-1])
         ws['V3'].value = self.year
-        ws['AG43'].value = self.year
-        ws['Y43'].value = self.close_day
+        ws['AG50'].value = self.year
+        ws['Y50'].value = self.close_day
         ws['C7'].value = work_days_num
 
     def colorize_weekend(self, ws):
-        for row in range(16, 39):
+        for row in range(16, 45):
             for col in self.weekends:
                 ws.cell(row=row, column=col + 4).fill = styles.PatternFill(start_color='5E5E5E', fill_type='solid')
